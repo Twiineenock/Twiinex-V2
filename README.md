@@ -1,10 +1,19 @@
 # 🛡️ Twiinex V2: Decentralized Social Commerce Escrow
 
-![Twiinex Banner](https://images.unsplash.com/photo-1639762681485-074b7f938ba0?q=80&w=2832&auto=format&fit=crop)
+<p align="center">
+  <img src="https://images.unsplash.com/photo-1639762681485-074b7f938ba0?q=80&w=2832&auto=format&fit=crop" width="100%" alt="Twiinex Banner">
+</p>
 
-**Twiinex V2** is a premium, decentralized escrow platform designed to secure social commerce in East Africa. By utilizing **Hiero Enterprise Java** and the **Hedera network**, Twiinex ensures that transactions between social media vendors and buyers are immutable, transparent, and safe from fraud.
+<p align="center">
+  <img src="https://img.shields.io/badge/Status-Development-orange?style=for-the-badge" alt="Status">
+  <img src="https://img.shields.io/badge/Hedera-HTS%20%26%20HCS-blue?style=for-the-badge&logo=hedera" alt="Hedera">
+  <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License">
+  <img src="https://img.shields.io/badge/Tech-Spring%20%2B%20React-6db33f?style=for-the-badge&logo=springboot" alt="Tech Stack">
+</p>
 
 ---
+
+**Twiinex V2** is a premium, decentralized escrow platform designed to secure social commerce in East Africa. By utilizing **Hiero Enterprise Java** and the **Hedera network**, Twiinex ensures that transactions between social media vendors and buyers are immutable, transparent, and safe from fraud.
 
 ## ✨ Key Features
 
@@ -12,108 +21,101 @@
 - **📜 Immutable Audit Trail (HCS)**: Every transaction event (payment, shipping, receipt) is logged to the Hedera Consensus Service for a verifiable history.
 - **📱 4-Step Escrow Flow**: A seamless user experience that guides buyers through Funding, Holding, Shipping, and Verification.
 - **💰 Flutterwave Integration**: Integrated with Mobile Money (MTN, Airtel) and Card payments for local accessibility.
-- **📊 Real-time Sync**: Live polling ensures the vendor dashboard and buyer payment pages stay in sync without manual refreshes.
+- **📊 Real-time Sync**: Live polling and Supabase Realtime ensure the vendor dashboard and buyer payment pages stay in sync.
 
 ---
 
-## 🛠️ Tech Stack
+## 🏗️ System Architecture
 
-### **Backend (Hiero-Enterprise-Spring)**
-- **Language**: Java 21 (Spring Boot 3.4)
-- **Blockchain**: Hedera Token Service (HTS) & Hedera Consensus Service (HCS)
-- **Database**: Supabase (PostgreSQL + Real-time)
-- **Payment Gateway**: Flutterwave
-
-### **Frontend (Vite + React)**
-- **Styling**: Vanilla CSS with Modern Aesthetics (Glassmorphism, Dark Mode)
-- **State Management**: React Hooks & Context
-- **Animations**: Framer Motion
-- **Icons**: Lucide React
-
----
-
-## 🏗️ Architecture
+Twiinex V2 follows a distributed architecture designed for scale and security:
 
 ```mermaid
 graph TD
-    Buyer[Buyer] -->|Pays UGX| FLW[Flutterwave]
-    FLW -->|Verification| API[Spring Boot API]
-    API -->|Mint Tokens| HTS[Hedera Token Service]
-    API -->|Log Event| HCS[Hedera Consensus Service]
-    API -->|Update Status| DB[Supabase DB]
-    Vendor[Vendor] -->|Mark Shipped| API
-    API -->|Log Shipping| HCS
-    Buyer -->|Confirm Receipt| API
-    API -->|Burn/Release Funds| HTS
-    API -->|Final Log| HCS
+    subgraph Frontend
+        Client[React Web App]
+    end
+
+    subgraph Backend
+        Server[Spring Boot API]
+        Hiero[Hiero Enterprise SDK]
+    end
+
+    subgraph External_Services
+        FLW[Flutterwave API]
+        SB[Supabase DB & Realtime]
+    end
+
+    subgraph Blockchain
+        HTS[Hedera Token Service]
+        HCS[Hedera Consensus Service]
+    end
+
+    Client -->|API Requests| Server
+    Server -->|Verify Payments| FLW
+    Server -->|Sync State| SB
+    Server -->|HTS Mint/Burn| Hiero
+    Hiero -->|Distributed Ledger| HTS
+    Hiero -->|Event Logging| HCS
+    SB -.->|Realtime Updates| Client
 ```
 
 ---
 
-## 🚀 Getting Started
+## 📂 Project Structure
 
-### **1. Prerequisites**
-- Java 21+
-- Node.js 18+
-- Hedera Testnet Account (via [Hedera Portal](https://portal.hedera.com/))
-- Supabase Project
-- Flutterwave Test API Keys
+This repository is a monorepo containing the following components:
 
-### **2. Backend Setup**
-Navigate to the server directory and configure your `application.properties`:
-
-```bash
-cd twiinex-v2-server
-```
-
-**`src/main/resources/application.properties`**:
-```properties
-spring.hiero.accountId=0.0.XXXX
-spring.hiero.privateKey=302e0201...
-spring.hiero.topicId=0.0.YYYY
-spring.hiero.tokenId=0.0.ZZZZ
-flw.secretKey=FLWSECK_TEST-...
-```
-
-Run the server:
-```bash
-./mvnw spring-boot:run
-```
-
-### **3. Frontend Setup**
-Navigate to the client directory and create a `.env` file:
-
-```bash
-cd twiinex-v2-client
-```
-
-**`.env`**:
-```env
-VITE_API_URL=http://localhost:8080
-VITE_SUPABASE_URL=your_supabase_url
-VITE_SUPABASE_ANON_KEY=your_anon_key
-VITE_FLW_PUBLIC_KEY=FLWPUBK_TEST-XXXX
-```
-
-Install dependencies and start:
-```bash
-npm install
-npm run dev
-```
+| Directory | Role | Tech |
+|-----------|------|------|
+| [`twiinex-v2-client`](./twiinex-v2-client) | User & Vendor Interface | React, Vite, Vanilla CSS |
+| [`twiinex-v2-server`](./twiinex-v2-server) | Core Business Logic | Spring Boot, Hiero Spring |
+| [`hiero-enterprise-java`](./hiero-enterprise-java) | Enterprise Hedera SDK | Java 21, gRPC |
 
 ---
 
-## 🔒 Security
+## 🚀 Quick Start
 
-- **Operator Keys**: All blockchain interactions are signed by an enterprise operator account.
-- **Escrow Logic**: Funds are only released when the buyer explicitly confirms receipt, or via a dispute resolution mechanism.
-- **Auditability**: Anyone with the HCS Topic ID can verify the transaction timeline on [Hashscan](https://hashscan.io/testnet/dashboard).
+### 1. Prerequisites
+- **Java 21+**
+- **Node.js 18+**
+- **Hedera Testnet Account** ([Join here](https://portal.hedera.com/))
+- **Supabase Account**
+
+### 2. Setup
+1.  **Clone the Repository**:
+    ```bash
+    git clone https://github.com/Twiineenock/Twiinex-V2.git
+    cd Twiinex-V2
+    ```
+
+2.  **Initialize SDK**:
+    ```bash
+    cd hiero-enterprise-java
+    ./mvnw clean install -DskipTests
+    cd ..
+    ```
+
+3.  **Start Backend**:
+    Follow the [Backend Setup Guide](./twiinex-v2-server/README.md).
+
+4.  **Start Frontend**:
+    Follow the [Frontend Setup Guide](./twiinex-v2-client/README.md).
+
+---
+
+## 🛡️ Security & Compliance
+
+- **Enterprise Custody**: Operator keys are handled via enterprise-grade configuration patterns.
+- **Non-Custodial Logic**: The platform acts as an automated orchestrator, with funds locked in verifiable HTS vaults.
+- **Transparency**: Every critical step is logged to HCS, allowing for third-party auditing via [Hashscan](https://hashscan.io/testnet/).
 
 ---
 
 ## 📄 License
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the **MIT License**. See the [LICENSE](./LICENSE) file for more details.
 
 ---
 
-Built with ❤️ by the **Twiinex Team** using **Hiero Enterprise**.
+<p align="center">
+  Built with ❤️ by the <b>Twiinex Team</b> using <b>Hiero Enterprise</b>.
+</p>

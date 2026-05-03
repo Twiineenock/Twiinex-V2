@@ -188,7 +188,7 @@ public class SupabaseService {
             headers.set("Prefer", "return=representation");
             
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
-            restTemplate.exchange(url, HttpMethod.PATCH, entity, Object.class);
+            restTemplate.exchange(url, HttpMethod.PATCH, entity, Void.class);
         } catch (Exception e) {
             log.error("Supabase update failed: {}", e.getMessage());
         }

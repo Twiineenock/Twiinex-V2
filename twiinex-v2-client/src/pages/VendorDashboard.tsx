@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Plus, Copy, Clock, ShieldCheck, TrendingUp, DollarSign, CheckCircle2, Send, X, Upload } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Plus, Copy, Clock, ShieldCheck, TrendingUp, DollarSign, CheckCircle2, Send, X, Camera, Image as ImageIcon, MessageSquare, LogOut, ChevronRight, User } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { createEscrow, getTransactions, updateTransactionStatus } from '../api/escrow';
 
@@ -13,6 +13,8 @@ const VendorDashboard = () => {
   const [user, setUser] = useState<any>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [createdLinkId, setCreatedLinkId] = useState<string | null>(null);
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   const fetchData = async (phone: string) => {
     try {
@@ -36,8 +38,6 @@ const VendorDashboard = () => {
       const parsedUser = JSON.parse(savedUser);
       setUser(parsedUser);
       fetchData(parsedUser.phone);
-      
-      // Polling for updates every 5 seconds
       const interval = setInterval(() => fetchData(parsedUser.phone), 5000);
       return () => clearInterval(interval);
     } else {
@@ -45,161 +45,176 @@ const VendorDashboard = () => {
     }
   }, []);
 
+  // Camera Logic
+  const startCamera = async () => {
+    setIsCameraOpen(true);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
+    } catch (err) {
+      console.error("Camera access denied", err);
+      alert("Please allow camera access to take photos.");
+      setIsCameraOpen(false);
+    }
+  };
+
+  const capturePhoto = () => {
+    if (videoRef.current) {
+      const canvas = document.createElement('canvas');
+      canvas.width = videoRef.current.videoWidth;
+      canvas.height = videoRef.current.videoHeight;
+      const ctx = canvas.getContext('2d');
+      ctx?.drawImage(videoRef.current, 0, 0);
+      setImageUrl(canvas.toDataURL('image/jpeg', 0.6));
+      stopCamera();
+    }
+  };
+
+  const stopCamera = () => {
+    if (videoRef.current && videoRef.current.srcObject) {
+      const stream = videoRef.current.srcObject as MediaStream;
+      stream.getTracks().forEach(track => track.stop());
+    }
+    setIsCameraOpen(false);
+  };
+
   const handleCreateLink = async () => {
     if (!itemName || !amount || loading) return;
     setLoading(true);
     try {
-      // 1. Create a "Safety Timeout" - if network is slow, don't block the user
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('TIMEOUT')), 8000)
-      );
-
-      // 2. Execute the create escrow call
-      const response = await Promise.race([
-        createEscrow(user.phone, parseFloat(amount), itemName, imageUrl),
-        timeoutPromise
-      ]) as any;
-      
-      if (response && response.id) {
-         setCreatedLinkId(response.id);
-      } else {
-         // Fallback if timeout hit but likely succeeded in background
-         setShowCreateModal(false);
-         setItemName('');
-         setAmount('');
-         setImageUrl('');
-         fetchData(user.phone);
+      const response = await createEscrow(user.phone, parseFloat(amount), itemName, imageUrl);
+      if (response?.id) {
+        setCreatedLinkId(response.id);
       }
-      
-      // 3. Refresh the list in the background
-      await fetchData(user.phone);
+      fetchData(user.phone);
     } catch (error: any) {
-      if (error.message === 'TIMEOUT') {
-         // Optimistic success: link is likely created on chain, just show list
-         setShowCreateModal(false);
-         fetchData(user.phone);
-      } else {
-         console.error('Failed to create escrow:', error);
-      }
+      console.error('Failed to create escrow:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleMarkShipped = async (id: string) => {
-    setUpdatingId(id);
-    try {
-      await updateTransactionStatus(id, 'SHIPPED');
-      await fetchData(user.phone);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setUpdatingId(null);
-    }
+  const shareOnWhatsApp = (id: string, item: string) => {
+    const text = `Hey! Use this secure Trust Link to pay for ${item}: ${window.location.origin}/pay/${id}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
   };
 
   return (
-    <div className="min-h-screen bg-[#050505] p-6 lg:p-12 text-white">
-      <div className="max-w-7xl mx-auto">
-        <header className="flex justify-between items-center mb-12">
+    <div className="min-h-screen bg-primary">
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        {/* Header Section */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-10">
           <div>
-            <h1 className="text-4xl font-black tracking-tighter">DASHBOARD</h1>
-            <p className="text-gray-500 font-medium">Welcome back, <span className="text-brand">{user?.name || 'Vendor'}</span></p>
+            <div className="flex items-center gap-2 text-brand mb-1">
+              <User className="w-4 h-4" />
+              <span className="text-xs font-bold uppercase tracking-wider">Vendor Dashboard</span>
+            </div>
+            <h1 className="text-3xl font-bold tracking-tight">Welcome, {user?.name || 'Partner'}</h1>
           </div>
-          <div className="flex gap-4">
+          
+          <div className="flex gap-3">
             <button 
               onClick={() => {
                 localStorage.removeItem('twiinex_user');
                 window.location.href = '/login';
               }}
-              className="px-6 py-2 rounded-xl bg-white/5 border border-white/10 text-gray-400 font-bold hover:text-white hover:bg-white/10 transition-all"
+              className="btn-outline text-xs px-4 flex items-center gap-2"
             >
-              Logout
+              <LogOut className="w-3.5 h-3.5" /> Logout
             </button>
             <button 
-              onClick={() => setShowCreateModal(true)}
-              className="btn-primary flex items-center gap-2 hover:scale-[1.02] active:scale-[0.98] transition-all"
+              onClick={() => {
+                setCreatedLinkId(null);
+                setShowCreateModal(true);
+              }}
+              className="btn-primary text-xs px-6 flex items-center gap-2 font-bold"
             >
-              <Plus className="w-5 h-5" /> Create Trust Link
+              <Plus className="w-4 h-4" /> Create New Link
             </button>
           </div>
-        </header>
+        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
+        {/* Stats Grid - Tidy Hashscan Style */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
           {[
-            { label: 'Total Volume', value: 'UGX 12.4M', icon: DollarSign, color: 'text-brand' },
-            { label: 'Active Escrows', value: '8', icon: Clock, color: 'text-blue-400' },
-            { label: 'Successful', value: '142', icon: ShieldCheck, color: 'text-emerald-400' },
-            { label: 'Trust Score', value: '98%', icon: TrendingUp, color: 'text-purple-400' },
+            { label: 'Escrow Volume', value: 'UGX 4.2M', icon: DollarSign, trend: '+12%' },
+            { label: 'Active Links', value: links.filter(l => l.status === 'PENDING').length, icon: Clock, trend: 'Stable' },
+            { label: 'Completed', value: links.filter(l => l.status === 'COMPLETED').length, icon: CheckCircle2, trend: '+4 today' },
+            { label: 'Trust Score', value: '9.8 / 10', icon: ShieldCheck, trend: 'Top Rated' },
           ].map((stat, i) => (
-            <div key={i} className="glass-card flex items-center gap-4 hover:border-brand/30 transition-all cursor-default">
-              <div className={`w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center ${stat.color}`}>
-                <stat.icon className="w-6 h-6" />
+            <div key={i} className="section-card">
+              <div className="flex items-center justify-between mb-2">
+                <stat.icon className="w-4 h-4 text-text-muted" />
+                <span className="text-[10px] font-bold text-success bg-success/10 px-1.5 py-0.5 rounded">{stat.trend}</span>
               </div>
-              <div>
-                <p className="text-[10px] font-black uppercase tracking-widest text-gray-500">{stat.label}</p>
-                <p className="text-xl font-black">{stat.value}</p>
-              </div>
+              <p className="label-text mb-1">{stat.label}</p>
+              <p className="text-xl font-bold">{stat.value}</p>
             </div>
           ))}
         </div>
 
-        <div className="glass-card overflow-hidden">
-          <div className="flex items-center justify-between mb-8">
-            <h3 className="text-xl font-bold">Recent Transactions</h3>
-            <button className="text-xs font-bold text-brand hover:underline">View All</button>
+        {/* Transactions Table - Clean Explorer Style */}
+        <div className="section-card p-0 overflow-hidden">
+          <div className="px-6 py-4 border-b border-border-color bg-secondary flex justify-between items-center">
+            <h3 className="text-sm font-bold uppercase tracking-wider">Recent Transactions</h3>
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-success" />
+              <span className="text-[10px] font-bold text-text-muted">Live Sync Active</span>
+            </div>
           </div>
           
           <div className="overflow-x-auto">
-            <table className="w-full text-left">
+            <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-white/5 text-[10px] font-black uppercase tracking-widest text-gray-500">
-                  <th className="pb-4 px-4">Transaction ID</th>
-                  <th className="pb-4 px-4">Item Details</th>
-                  <th className="pb-4 px-4">Amount</th>
-                  <th className="pb-4 px-4">Status</th>
-                  <th className="pb-4 px-4">Created</th>
-                  <th className="pb-4 px-4 text-right">Action</th>
+                <tr className="bg-tertiary/50">
+                  <th className="px-6 py-3 label-text border-b border-border-color">Details</th>
+                  <th className="px-6 py-3 label-text border-b border-border-color">ID</th>
+                  <th className="px-6 py-3 label-text border-b border-border-color">Amount</th>
+                  <th className="px-6 py-3 label-text border-b border-border-color">Status</th>
+                  <th className="px-6 py-3 label-text border-b border-border-color">Date</th>
+                  <th className="px-6 py-3 label-text border-b border-border-color text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/5">
+              <tbody className="divide-y divide-border-color">
                 {links.map((link, i) => (
-                  <tr key={i} className="group hover:bg-white/[0.02] transition-colors">
-                    <td className="py-4 px-4 font-mono text-sm text-gray-400">{link.id}</td>
-                    <td className="py-4 px-4 font-bold">{link.item}</td>
-                    <td className="py-4 px-4 font-mono text-gray-300">UGX {link.amount}</td>
-                    <td className="py-4 px-4">
-                      <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter ${
-                        link.status === 'COMPLETED' ? 'bg-emerald-500/10 text-emerald-500' :
+                  <tr key={i} className="hover:bg-secondary/50 transition-colors group">
+                    <td className="px-6 py-4 font-semibold">{link.item}</td>
+                    <td className="px-6 py-4"><span className="value-text text-text-muted">{link.id}</span></td>
+                    <td className="px-6 py-4 font-mono font-bold text-brand">UGX {link.amount}</td>
+                    <td className="px-6 py-4">
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                        link.status === 'COMPLETED' ? 'bg-success/10 text-success' :
                         link.status === 'FUNDED' ? 'bg-brand/10 text-brand' : 
                         link.status === 'SHIPPED' ? 'bg-blue-500/10 text-blue-500' :
-                        'bg-brand/5 text-gray-500'
+                        'bg-tertiary text-text-muted'
                       }`}>
                         {link.status}
                       </span>
                     </td>
-                    <td className="py-4 px-4 text-sm text-gray-500">{link.date}</td>
-                    <td className="py-4 px-4 text-right flex items-center justify-end gap-2">
-                      {link.status === 'FUNDED' && (
+                    <td className="px-6 py-4 text-xs text-text-muted">{link.date}</td>
+                    <td className="px-6 py-4 text-right">
+                      <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button 
-                          onClick={() => handleMarkShipped(link.id)}
-                          disabled={updatingId === link.id}
-                          className="px-4 py-2 bg-brand text-black text-[10px] font-black uppercase rounded-xl hover:bg-white transition-all transform hover:scale-[1.05] active:scale-[0.95] disabled:opacity-50"
+                          onClick={() => shareOnWhatsApp(link.id, link.item)}
+                          className="p-1.5 hover:bg-brand/10 text-text-muted hover:text-brand rounded"
+                          title="Share on WhatsApp"
                         >
-                          {updatingId === link.id ? 'Updating...' : 'Mark Shipped'}
+                          <MessageSquare className="w-4 h-4" />
                         </button>
-                      )}
-                      <button 
-                        onClick={() => {
-                          const url = `${window.location.origin}/pay/${link.id}`;
-                          navigator.clipboard.writeText(url);
-                          // We could add a custom toast here if needed
-                        }}
-                        className="p-2 hover:bg-white/10 rounded-xl transition-colors text-gray-400 hover:text-white"
-                        title="Copy Link"
-                      >
-                        <Copy className="w-4 h-4" />
-                      </button>
+                        <button 
+                          onClick={() => {
+                            navigator.clipboard.writeText(`${window.location.origin}/pay/${link.id}`);
+                            alert("Link copied!");
+                          }}
+                          className="p-1.5 hover:bg-brand/10 text-text-muted hover:text-brand rounded"
+                          title="Copy Link"
+                        >
+                          <Copy className="w-4 h-4" />
+                        </button>
+                        <ChevronRight className="w-4 h-4 text-text-muted" />
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -209,170 +224,127 @@ const VendorDashboard = () => {
         </div>
       </div>
 
+      {/* Simplified Modal - Hashscan Style */}
       <AnimatePresence>
         {showCreateModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/80 backdrop-blur-md">
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
             <motion.div 
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="glass-card w-full max-w-md border-brand/20 shadow-brand/10 p-0 overflow-hidden"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              className="bg-primary border border-border-color rounded-lg w-full max-w-md shadow-2xl overflow-hidden"
             >
                {!createdLinkId ? (
-                  <div className="p-8">
-                     <h2 className="text-2xl font-black mb-2 uppercase">Generate Link</h2>
-                     <p className="text-gray-400 text-sm mb-8 font-medium">Create a new on-chain escrow transaction.</p>
+                  <div className="p-6">
+                     <div className="flex items-center justify-between mb-6">
+                        <h2 className="text-xl font-bold">New Trust Link</h2>
+                        <button onClick={() => setShowCreateModal(false)} className="text-text-muted hover:text-primary"><X className="w-5 h-5" /></button>
+                     </div>
                      
-                     <div className="space-y-6">
+                     <div className="space-y-4">
                         <div>
-                           <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2 block">Item Name</label>
+                           <label className="label-text mb-1.5 block">Item Name / Description</label>
                            <input 
                               type="text" 
                               value={itemName}
                               onChange={(e) => setItemName(e.target.value)}
-                              placeholder="e.g. Vintage Leather Bag"
-                              className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 focus:border-brand focus:outline-none transition-all"
+                              placeholder="e.g. JBL Speaker XL"
+                              className="w-full bg-secondary border border-border-color rounded px-4 py-2.5 focus:border-brand focus:outline-none"
                            />
                         </div>
                         <div>
-                           <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2 block">Amount (UGX)</label>
+                           <label className="label-text mb-1.5 block">Amount (UGX)</label>
                            <input 
                               type="number" 
                               value={amount}
                               onChange={(e) => setAmount(e.target.value)}
-                              placeholder="0.00"
-                              className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 focus:border-brand focus:outline-none transition-all font-mono"
+                              placeholder="0"
+                              className="w-full bg-secondary border border-border-color rounded px-4 py-2.5 focus:border-brand focus:outline-none font-mono"
                            />
                         </div>
                         <div>
-                           <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2 block">Item Photo</label>
-                           {!imageUrl ? (
-                              <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-white/10 rounded-2xl cursor-pointer hover:bg-white/5 hover:border-brand/50 transition-all group">
-                                 <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                                    <Upload className="w-8 h-8 text-gray-500 group-hover:text-brand mb-2 transition-colors" />
-                                    <p className="text-[10px] font-black uppercase tracking-widest text-gray-500 group-hover:text-gray-300">Click or Drag to Upload</p>
-                                 </div>
-                                 <input 
-                                    type="file" 
-                                    className="hidden" 
-                                    accept="image/*"
-                                    onChange={(e) => {
-                                       const file = e.target.files?.[0];
-                                       if (file) {
-                                          const reader = new FileReader();
-                                          reader.onload = (event) => {
-                                             const img = new Image();
-                                             img.onload = () => {
-                                                // Create a canvas to resize the image
-                                                const canvas = document.createElement('canvas');
-                                                const MAX_WIDTH = 800;
-                                                const MAX_HEIGHT = 800;
-                                                let width = img.width;
-                                                let height = img.height;
-
-                                                if (width > height) {
-                                                   if (width > MAX_WIDTH) {
-                                                      height *= MAX_WIDTH / width;
-                                                      width = MAX_WIDTH;
-                                                   }
-                                                } else {
-                                                   if (height > MAX_HEIGHT) {
-                                                      width *= MAX_HEIGHT / height;
-                                                      height = MAX_HEIGHT;
-                                                   }
-                                                }
-
-                                                canvas.width = width;
-                                                canvas.height = height;
-                                                const ctx = canvas.getContext('2d');
-                                                ctx?.drawImage(img, 0, 0, width, height);
-                                                
-                                                // Convert to optimized JPEG (quality 0.6 is plenty for metadata)
-                                                const dataUrl = canvas.toDataURL('image/jpeg', 0.6);
-                                                setImageUrl(dataUrl);
-                                             };
-                                             img.src = event.target?.result as string;
-                                          };
-                                          reader.readAsDataURL(file);
-                                       }
-                                    }}
-                                 />
-                              </label>
+                           <label className="label-text mb-1.5 block">Product Evidence</label>
+                           {!imageUrl && !isCameraOpen ? (
+                              <div className="flex gap-2">
+                                <button 
+                                  onClick={startCamera}
+                                  className="flex-1 flex flex-col items-center justify-center gap-2 py-6 border border-dashed border-border-color rounded hover:bg-secondary transition-colors group"
+                                >
+                                  <Camera className="w-6 h-6 text-text-muted group-hover:text-brand" />
+                                  <span className="text-[10px] font-bold uppercase">Take Photo</span>
+                                </button>
+                                <label className="flex-1 flex flex-col items-center justify-center gap-2 py-6 border border-dashed border-border-color rounded cursor-pointer hover:bg-secondary transition-colors group">
+                                  <ImageIcon className="w-6 h-6 text-text-muted group-hover:text-brand" />
+                                  <span className="text-[10px] font-bold uppercase">Upload File</span>
+                                  <input type="file" className="hidden" accept="image/*" onChange={(e) => {
+                                    const file = e.target.files?.[0];
+                                    if (file) {
+                                      const r = new FileReader();
+                                      r.onload = (ev) => setImageUrl(ev.target?.result as string);
+                                      r.readAsDataURL(file);
+                                    }
+                                  }} />
+                                </label>
+                              </div>
+                           ) : isCameraOpen ? (
+                              <div className="relative rounded overflow-hidden bg-black">
+                                <video ref={videoRef} autoPlay playsInline className="w-full aspect-square object-cover" />
+                                <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-4">
+                                  <button onClick={capturePhoto} className="btn-primary rounded-full p-3"><Camera className="w-5 h-5" /></button>
+                                  <button onClick={stopCamera} className="btn-outline bg-black/50 text-white border-white/20 rounded-full p-3"><X className="w-5 h-5" /></button>
+                                </div>
+                              </div>
                            ) : (
-                              <div className="relative w-full h-32 rounded-2xl overflow-hidden border border-brand/50">
+                              <div className="relative aspect-video rounded overflow-hidden border border-brand">
                                  <img src={imageUrl} alt="Preview" className="w-full h-full object-cover" />
                                  <button 
                                     onClick={() => setImageUrl('')}
-                                    className="absolute top-2 right-2 p-1.5 bg-black/50 backdrop-blur-md rounded-full text-white hover:bg-brand transition-all"
+                                    className="absolute top-2 right-2 p-1 bg-black/50 text-white rounded-full hover:bg-brand"
                                  >
                                     <X size={14} />
                                  </button>
                               </div>
                            )}
                         </div>
-                        <div className="flex gap-4 pt-4">
-                           <button 
-                              onClick={() => setShowCreateModal(false)}
-                              className="flex-1 py-4 rounded-2xl bg-white/5 font-bold hover:bg-white/10 transition-all"
-                           >
-                              Cancel
-                           </button>
-                           <button 
-                              onClick={handleCreateLink}
-                              disabled={loading}
-                              className="flex-1 btn-primary"
-                           >
-                              {loading ? 'Creating...' : 'Generate'}
-                           </button>
-                        </div>
+                        <button 
+                           onClick={handleCreateLink}
+                           disabled={loading || !itemName || !amount}
+                           className="w-full btn-primary py-3 mt-4"
+                        >
+                           {loading ? 'Confirming on Hedera...' : 'Generate Secure Link'}
+                        </button>
                      </div>
                   </div>
                ) : (
-                  <div className="p-8 text-center bg-gradient-to-b from-brand/10 to-transparent">
-                     <div className="w-20 h-20 bg-brand/20 rounded-full flex items-center justify-center mx-auto mb-6 border border-brand/30 shadow-[0_0_30px_rgba(255,51,102,0.2)]">
-                        <CheckCircle2 size={40} className="text-brand" />
+                  <div className="p-8 text-center">
+                     <div className="w-16 h-16 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <CheckCircle2 size={32} className="text-success" />
                      </div>
-                     <h2 className="text-2xl font-black mb-2 uppercase">Link Ready!</h2>
-                     <p className="text-gray-400 text-sm mb-8">Your trust link has been secured on the Hedera network.</p>
+                     <h2 className="text-xl font-bold mb-1">Trust Link Active</h2>
+                     <p className="text-text-secondary text-sm mb-6">Secured on Hedera HCS. Ready for payment.</p>
 
-                     <div className="space-y-4">
-                        <div className="p-4 bg-white/5 rounded-2xl border border-brand/20 flex items-center justify-between group">
-                           <span className="text-xs font-mono text-gray-400 truncate mr-4">
-                              {window.location.origin}/pay/{createdLinkId}
+                     <div className="space-y-3">
+                        <div className="p-3 bg-secondary border border-border-color rounded flex items-center justify-between">
+                           <span className="text-[10px] font-mono text-text-muted truncate">
+                              {window.location.origin.replace('http://', '').replace('https://', '')}/pay/{createdLinkId}
                            </span>
-                           <button 
-                              onClick={() => {
-                                 navigator.clipboard.writeText(`${window.location.origin}/pay/${createdLinkId}`);
-                              }}
-                              className="p-2 bg-brand/20 rounded-lg text-brand hover:bg-brand transition-all hover:text-black"
-                           >
-                              <Copy size={16} />
-                           </button>
+                           <button onClick={() => navigator.clipboard.writeText(`${window.location.origin}/pay/${createdLinkId}`)} className="text-brand hover:brightness-110"><Copy size={16} /></button>
                         </div>
-
-                        <div className="grid grid-cols-2 gap-4">
-                           <button 
-                              onClick={() => {
-                                 const text = `Hey! Pay securely using Twiinex Trust Link: ${window.location.origin}/pay/${createdLinkId}`;
-                                 window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
-                              }}
-                              className="flex items-center justify-center gap-2 py-4 rounded-2xl bg-[#25D366]/10 text-[#25D366] font-black uppercase text-[10px] tracking-widest border border-[#25D366]/20 hover:bg-[#25D366] hover:text-white transition-all"
-                           >
-                              <Send size={14} /> WhatsApp
-                           </button>
-                           <button 
-                              onClick={() => {
-                                 setItemName('');
-                                 setAmount('');
-                                 setImageUrl('');
-                                 setCreatedLinkId(null);
-                                 setShowCreateModal(false);
-                              }}
-                              className="py-4 rounded-2xl bg-white text-black font-black uppercase text-[10px] tracking-widest hover:bg-gray-200 transition-all"
-                           >
-                              Done
-                           </button>
-                        </div>
+                        <button 
+                           onClick={() => shareOnWhatsApp(createdLinkId!, itemName)}
+                           className="w-full btn-primary bg-[#25D366] hover:bg-[#22c35e] flex items-center justify-center gap-2 py-3"
+                        >
+                           <MessageSquare className="w-4 h-4" /> Share to WhatsApp
+                        </button>
+                        <button 
+                           onClick={() => {
+                             setItemName(''); setAmount(''); setImageUrl('');
+                             setCreatedLinkId(null); setShowCreateModal(false);
+                           }}
+                           className="w-full btn-outline py-3"
+                        >
+                           Return to Dashboard
+                        </button>
                      </div>
                   </div>
                )}

@@ -121,8 +121,10 @@ const BuyerPaymentPage = () => {
       setStep(2);
       // Clean up URL params after successful verification
       window.history.replaceState({}, document.title, window.location.pathname);
-    } catch (err) {
+    } catch (err: any) {
       console.error("❌ Verification failed:", err);
+      const msg = err.response?.data?.message || err.message || "Unknown error";
+      alert(`Verification Failed: ${msg}\n\nPlease check your backend logs on Render for more details.`);
     } finally {
       setVerifying(false);
     }

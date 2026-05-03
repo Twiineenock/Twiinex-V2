@@ -184,8 +184,11 @@ public class SupabaseService {
                 body.put("metadata", additionalMetadata);
             }
 
-            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, getHeaders());
-            restTemplate.exchange(url, HttpMethod.PATCH, entity, Map.class);
+            HttpHeaders headers = getHeaders();
+            headers.set("Prefer", "return=representation");
+            
+            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
+            restTemplate.exchange(url, HttpMethod.PATCH, entity, Object.class);
         } catch (Exception e) {
             log.error("Supabase update failed: {}", e.getMessage());
         }

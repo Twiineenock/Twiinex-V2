@@ -129,14 +129,26 @@ const BuyerPaymentPage = () => {
   };
 
   const handlePay = async () => {
-    if (!window.FlutterwaveCheckout) return;
+    if (!window.FlutterwaveCheckout) {
+      console.error("❌ Flutterwave script not loaded");
+      alert("Payment system is still initializing. Please wait a moment and try again.");
+      return;
+    }
+    
+    const publicKey = import.meta.env.VITE_FLW_PUBLIC_KEY;
+    if (!publicKey) {
+      console.error("❌ Missing VITE_FLW_PUBLIC_KEY environment variable");
+      alert("System configuration error: Missing Payment Key. Please check environment variables.");
+      return;
+    }
+
     if (!id || !transaction) return;
 
     try {
       updateTransactionMetadata(id, 'paymentAttempt').catch(e => console.warn("Metadata track failed", e));
 
       window.FlutterwaveCheckout({
-        public_key: import.meta.env.VITE_FLW_PUBLIC_KEY,
+        public_key: publicKey,
         tx_ref: `TX-${id}-${Date.now()}`,
         amount: transaction.amount,
         currency: "UGX",

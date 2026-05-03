@@ -40,10 +40,8 @@ public class TransactionController {
         String description = (String) request.get("description");
         String imageUrl = (String) request.get("imageUrl");
 
-        // 1. Create in Supabase (we'll adapt createTransaction from SupabaseService)
-        // Note: The SupabaseService's createTransaction requires a contractId, but we will pass null 
-        // because we are moving away from the EVM contract.
-        Map<String, Object> transaction = supabaseService.createTransaction(vendorPhone, amount, description, null);
+        // 1. Create in Supabase
+        Map<String, Object> transaction = supabaseService.createTransaction(vendorPhone, amount, description, null, imageUrl);
         String txId = (String) transaction.get("id");
 
         // 2. Log to HCS
@@ -51,12 +49,14 @@ public class TransactionController {
         Map<String, Object> hcsResult = hederaService.submitHCSEvent(message);
 
         if ((Boolean) hcsResult.getOrDefault("success", false)) {
+            // MERGE: Keep existing metadata (like imageUrl) and add HCS data
             Map<String, Object> metadata = (Map<String, Object>) transaction.get("metadata");
             if (metadata == null) metadata = new HashMap<>();
             
             metadata.put("hcsTopicId", hcsResult.get("topicId"));
             metadata.put("hcsSequenceNumber", hcsResult.get("sequenceNumber"));
             
+            // Save the merged metadata back to Supabase
             supabaseService.updateStatus(txId, "PENDING", metadata);
             transaction.put("metadata", metadata);
         }
@@ -97,8 +97,31 @@ public class TransactionController {
         long amount = ((Number) tx.get("amount")).longValue();
 
         if ("FUNDED".equals(status)) {
+            // 1. On-Chain Deposit
+            Map<String, Object> contractResult = hederaService.executeContractFunction("createOrder", id);
+            if ((Boolean) contractResult.getOrDefault("success", false)) {
+                metadata.put("lastTxId", contractResult.get("transactionId"));
+                metadata.put("isContractCall", true);
+            }
+            // 2. Token Minting
             hederaService.mintVaultTokens(amount, id);
+            
+        } else if ("SHIPPED".equals(status)) {
+            // On-Chain Shipment Log
+            Map<String, Object> contractResult = hederaService.executeContractFunction("markShipped", id);
+            if ((Boolean) contractResult.getOrDefault("success", false)) {
+                metadata.put("lastTxId", contractResult.get("transactionId"));
+                metadata.put("isContractCall", true);
+            }
+            
         } else if ("COMPLETED".equals(status)) {
+            // 1. On-Chain Release
+            Map<String, Object> contractResult = hederaService.executeContractFunction("confirmReceipt", id);
+            if ((Boolean) contractResult.getOrDefault("success", false)) {
+                metadata.put("lastTxId", contractResult.get("transactionId"));
+                metadata.put("isContractCall", true);
+            }
+            // 2. Token Burn
             hederaService.burnVaultTokens(amount);
         }
 

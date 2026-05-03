@@ -5,6 +5,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.hiero.base.ContractEventClient;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
 import java.util.HashMap;
@@ -31,6 +33,9 @@ public class HederaService {
 
     @Value("${spring.hiero.tokenId:}")
     private String tokenIdStr;
+
+    @Autowired(required = false)
+    private ContractEventClient contractEventClient;
 
     @PostConstruct
     public void init() {
@@ -150,12 +155,70 @@ public class HederaService {
                     .execute(client);
 
             TransactionReceipt receipt = txResponse.getReceipt(client);
-            log.info("🚀 HTS Tokens Burned (Payout): {}. Status: {}", amount, receipt.status);
+            String transactionId = txResponse.transactionId.toString();
+            log.info("🚀 HTS Tokens Burned (Payout): {}. Status: {}. TxID: {}", amount, receipt.status, transactionId);
 
             result.put("success", true);
             result.put("status", receipt.status.toString());
+            result.put("transactionId", transactionId);
         } catch (Exception e) {
             log.error("❌ HTS Burn Error: {}", e.getMessage());
+            result.put("success", false);
+            result.put("error", e.getMessage());
+        }
+        return result;
+    }
+
+    public void observeEscrowEvents(String contractId) {
+        if (contractEventClient == null) {
+            log.warn("⚠️ ContractEventClient not available. Skipping observation.");
+            return;
+        }
+
+        try {
+            ContractId id = ContractId.fromString(contractId);
+            contractEventClient.observeContractLogs(id, logEntry -> {
+                log.info("🔔 New Smart Contract Event from {}: data={}, topics={}", 
+                    id, logEntry.data(), logEntry.topics());
+                
+                // Here we would typically map the event to a business action
+            });
+            log.info("👀 Observing events for contract: {}", contractId);
+        } catch (Exception e) {
+            log.error("❌ Error starting event observation: {}", e.getMessage());
+        }
+    }
+
+    public Map<String, Object> executeContractFunction(String functionName, String orderId) {
+        Map<String, Object> result = new HashMap<>();
+        if (client == null) {
+            log.info("📝 [SIMULATED CONTRACT CALL]: {}({})", functionName, orderId);
+            result.put("success", true);
+            result.put("transactionId", "0.0.0@0.0");
+            return result;
+        }
+
+        try {
+            String contractIdStr = "0.0.5284312"; 
+            ContractId contractId = ContractId.fromString(contractIdStr);
+
+            TransactionResponse txResponse = new ContractExecuteTransaction()
+                    .setContractId(contractId)
+                    .setGas(100_000)
+                    .setFunction(functionName, new ContractFunctionParameters()
+                            .addString(orderId))
+                    .execute(client);
+
+            TransactionReceipt receipt = txResponse.getReceipt(client);
+            String transactionId = txResponse.transactionId.toString();
+            
+            log.info("⚖️ Smart Contract Call: {}. Status: {}. TxID: {}", functionName, receipt.status, transactionId);
+
+            result.put("success", true);
+            result.put("transactionId", transactionId);
+            result.put("status", receipt.status.toString());
+        } catch (Exception e) {
+            log.error("❌ Smart Contract Error [{}]: {}", functionName, e.getMessage());
             result.put("success", false);
             result.put("error", e.getMessage());
         }

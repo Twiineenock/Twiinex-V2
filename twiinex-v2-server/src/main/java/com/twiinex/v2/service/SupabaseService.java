@@ -39,7 +39,7 @@ public class SupabaseService {
         return headers;
     }
 
-    public Map<String, Object> createTransaction(String sellerPhone, long amount, String description, String contractId) {
+    public Map<String, Object> createTransaction(String sellerPhone, long amount, String description, String contractId, String imageUrl) {
         try {
             ensureSeller(sellerPhone);
             String url = supabaseUrl + "/transactions";
@@ -55,6 +55,7 @@ public class SupabaseService {
             
             Map<String, Object> metadata = new HashMap<>();
             metadata.put("contractId", contractId);
+            metadata.put("imageUrl", imageUrl != null ? imageUrl : "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?q=80&w=2070&auto=format&fit=crop");
             metadata.put("views", 0);
             metadata.put("history", new ArrayList<>());
             body.put("metadata", metadata);
@@ -69,11 +70,8 @@ public class SupabaseService {
             }
             return (Map<String, Object>) response.getBody();
         } catch (Exception e) {
-            log.error("Supabase creation failed: {}", e.getMessage());
-            // Fallback: return a mock map so the controller doesn't NPE
-            Map<String, Object> mock = new HashMap<>();
-            mock.put("id", "TX-LOCAL-" + System.currentTimeMillis());
-            return mock;
+            log.error("❌ SUPABASE CRITICAL FAILURE: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to create transaction in Supabase: " + e.getMessage());
         }
     }
 

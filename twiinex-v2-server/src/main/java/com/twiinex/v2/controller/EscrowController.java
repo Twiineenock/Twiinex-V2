@@ -29,8 +29,8 @@ public class EscrowController {
         // 1. Deploy Contract to Hedera
         ContractId contractId = escrowService.deployEscrow(phone, amount);
 
-        // 2. Store in Supabase
-        Map<String, Object> transaction = supabaseService.createTransaction(phone, amount, description, contractId.toString());
+        // 2. Store in Supabase (with null for imageUrl as it's optional here)
+        Map<String, Object> transaction = supabaseService.createTransaction(phone, amount, description, contractId.toString(), null);
 
         return Map.of(
             "success", true,

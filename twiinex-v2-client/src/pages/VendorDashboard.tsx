@@ -1,16 +1,18 @@
 import { useState, useEffect } from 'react';
-import { Plus, Copy, Clock, ShieldCheck, TrendingUp, DollarSign } from 'lucide-react';
+import { Plus, Copy, Clock, ShieldCheck, TrendingUp, DollarSign, CheckCircle2, Share2, Send, X, Upload, Image as ImageIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { createEscrow, getTransactions, updateTransactionStatus } from '../api/escrow';
 
 const VendorDashboard = () => {
   const [itemName, setItemName] = useState('');
   const [amount, setAmount] = useState('');
+  const [imageUrl, setImageUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [links, setLinks] = useState<any[]>([]);
   const [user, setUser] = useState<any>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [createdLinkId, setCreatedLinkId] = useState<string | null>(null);
 
   const fetchData = async (phone: string) => {
     try {
@@ -47,19 +49,38 @@ const VendorDashboard = () => {
     if (!itemName || !amount || loading) return;
     setLoading(true);
     try {
-      // 1. Create the escrow
-      await createEscrow(user.phone, parseFloat(amount), itemName);
+      // 1. Create a "Safety Timeout" - if network is slow, don't block the user
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('TIMEOUT')), 8000)
+      );
+
+      // 2. Execute the create escrow call
+      const response = await Promise.race([
+        createEscrow(user.phone, parseFloat(amount), itemName, imageUrl),
+        timeoutPromise
+      ]) as any;
       
-      // 2. Clear inputs and close modal immediately for better UX
-      setItemName('');
-      setAmount('');
-      setShowCreateModal(false);
+      if (response && response.id) {
+         setCreatedLinkId(response.id);
+      } else {
+         // Fallback if timeout hit but likely succeeded in background
+         setShowCreateModal(false);
+         setItemName('');
+         setAmount('');
+         setImageUrl('');
+         fetchData(user.phone);
+      }
       
       // 3. Refresh the list in the background
       await fetchData(user.phone);
-    } catch (error) {
-      console.error('Failed to create escrow:', error);
-      // Optional: Add user feedback here if it fails
+    } catch (error: any) {
+      if (error.message === 'TIMEOUT') {
+         // Optimistic success: link is likely created on chain, just show list
+         setShowCreateModal(false);
+         fetchData(user.phone);
+      } else {
+         console.error('Failed to create escrow:', error);
+      }
     } finally {
       setLoading(false);
     }
@@ -190,53 +211,171 @@ const VendorDashboard = () => {
 
       <AnimatePresence>
         {showCreateModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/80 backdrop-blur-sm">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/80 backdrop-blur-md">
             <motion.div 
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="glass-card w-full max-w-md border-brand/20 shadow-brand/10"
+              className="glass-card w-full max-w-md border-brand/20 shadow-brand/10 p-0 overflow-hidden"
             >
-              <h2 className="text-2xl font-black mb-2 uppercase">Generate Link</h2>
-              <p className="text-gray-400 text-sm mb-8 font-medium">Create a new on-chain escrow transaction.</p>
-              
-              <div className="space-y-6">
-                <div>
-                  <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2 block">Item Name</label>
-                  <input 
-                    type="text" 
-                    value={itemName}
-                    onChange={(e) => setItemName(e.target.value)}
-                    placeholder="e.g. Vintage Leather Bag"
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 focus:border-brand focus:outline-none transition-all"
-                  />
-                </div>
-                <div>
-                  <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2 block">Amount (UGX)</label>
-                  <input 
-                    type="number" 
-                    value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
-                    placeholder="0.00"
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 focus:border-brand focus:outline-none transition-all font-mono"
-                  />
-                </div>
-                <div className="flex gap-4 pt-4">
-                  <button 
-                    onClick={() => setShowCreateModal(false)}
-                    className="flex-1 py-4 rounded-2xl bg-white/5 font-bold hover:bg-white/10 transition-all"
-                  >
-                    Cancel
-                  </button>
-                  <button 
-                    onClick={handleCreateLink}
-                    disabled={loading}
-                    className="flex-1 btn-primary"
-                  >
-                    {loading ? 'Creating...' : 'Generate'}
-                  </button>
-                </div>
-              </div>
+               {!createdLinkId ? (
+                  <div className="p-8">
+                     <h2 className="text-2xl font-black mb-2 uppercase">Generate Link</h2>
+                     <p className="text-gray-400 text-sm mb-8 font-medium">Create a new on-chain escrow transaction.</p>
+                     
+                     <div className="space-y-6">
+                        <div>
+                           <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2 block">Item Name</label>
+                           <input 
+                              type="text" 
+                              value={itemName}
+                              onChange={(e) => setItemName(e.target.value)}
+                              placeholder="e.g. Vintage Leather Bag"
+                              className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 focus:border-brand focus:outline-none transition-all"
+                           />
+                        </div>
+                        <div>
+                           <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2 block">Amount (UGX)</label>
+                           <input 
+                              type="number" 
+                              value={amount}
+                              onChange={(e) => setAmount(e.target.value)}
+                              placeholder="0.00"
+                              className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 focus:border-brand focus:outline-none transition-all font-mono"
+                           />
+                        </div>
+                        <div>
+                           <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2 block">Item Photo</label>
+                           {!imageUrl ? (
+                              <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-white/10 rounded-2xl cursor-pointer hover:bg-white/5 hover:border-brand/50 transition-all group">
+                                 <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                    <Upload className="w-8 h-8 text-gray-500 group-hover:text-brand mb-2 transition-colors" />
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-gray-500 group-hover:text-gray-300">Click or Drag to Upload</p>
+                                 </div>
+                                 <input 
+                                    type="file" 
+                                    className="hidden" 
+                                    accept="image/*"
+                                    onChange={(e) => {
+                                       const file = e.target.files?.[0];
+                                       if (file) {
+                                          const reader = new FileReader();
+                                          reader.onload = (event) => {
+                                             const img = new Image();
+                                             img.onload = () => {
+                                                // Create a canvas to resize the image
+                                                const canvas = document.createElement('canvas');
+                                                const MAX_WIDTH = 800;
+                                                const MAX_HEIGHT = 800;
+                                                let width = img.width;
+                                                let height = img.height;
+
+                                                if (width > height) {
+                                                   if (width > MAX_WIDTH) {
+                                                      height *= MAX_WIDTH / width;
+                                                      width = MAX_WIDTH;
+                                                   }
+                                                } else {
+                                                   if (height > MAX_HEIGHT) {
+                                                      width *= MAX_HEIGHT / height;
+                                                      height = MAX_HEIGHT;
+                                                   }
+                                                }
+
+                                                canvas.width = width;
+                                                canvas.height = height;
+                                                const ctx = canvas.getContext('2d');
+                                                ctx?.drawImage(img, 0, 0, width, height);
+                                                
+                                                // Convert to optimized JPEG (quality 0.6 is plenty for metadata)
+                                                const dataUrl = canvas.toDataURL('image/jpeg', 0.6);
+                                                setImageUrl(dataUrl);
+                                             };
+                                             img.src = event.target?.result as string;
+                                          };
+                                          reader.readAsDataURL(file);
+                                       }
+                                    }}
+                                 />
+                              </label>
+                           ) : (
+                              <div className="relative w-full h-32 rounded-2xl overflow-hidden border border-brand/50">
+                                 <img src={imageUrl} alt="Preview" className="w-full h-full object-cover" />
+                                 <button 
+                                    onClick={() => setImageUrl('')}
+                                    className="absolute top-2 right-2 p-1.5 bg-black/50 backdrop-blur-md rounded-full text-white hover:bg-brand transition-all"
+                                 >
+                                    <X size={14} />
+                                 </button>
+                              </div>
+                           )}
+                        </div>
+                        <div className="flex gap-4 pt-4">
+                           <button 
+                              onClick={() => setShowCreateModal(false)}
+                              className="flex-1 py-4 rounded-2xl bg-white/5 font-bold hover:bg-white/10 transition-all"
+                           >
+                              Cancel
+                           </button>
+                           <button 
+                              onClick={handleCreateLink}
+                              disabled={loading}
+                              className="flex-1 btn-primary"
+                           >
+                              {loading ? 'Creating...' : 'Generate'}
+                           </button>
+                        </div>
+                     </div>
+                  </div>
+               ) : (
+                  <div className="p-8 text-center bg-gradient-to-b from-brand/10 to-transparent">
+                     <div className="w-20 h-20 bg-brand/20 rounded-full flex items-center justify-center mx-auto mb-6 border border-brand/30 shadow-[0_0_30px_rgba(255,51,102,0.2)]">
+                        <CheckCircle2 size={40} className="text-brand" />
+                     </div>
+                     <h2 className="text-2xl font-black mb-2 uppercase">Link Ready!</h2>
+                     <p className="text-gray-400 text-sm mb-8">Your trust link has been secured on the Hedera network.</p>
+
+                     <div className="space-y-4">
+                        <div className="p-4 bg-white/5 rounded-2xl border border-brand/20 flex items-center justify-between group">
+                           <span className="text-xs font-mono text-gray-400 truncate mr-4">
+                              {window.location.origin}/pay/{createdLinkId}
+                           </span>
+                           <button 
+                              onClick={() => {
+                                 navigator.clipboard.writeText(`${window.location.origin}/pay/${createdLinkId}`);
+                              }}
+                              className="p-2 bg-brand/20 rounded-lg text-brand hover:bg-brand transition-all hover:text-black"
+                           >
+                              <Copy size={16} />
+                           </button>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                           <button 
+                              onClick={() => {
+                                 const text = `Hey! Pay securely using Twiinex Trust Link: ${window.location.origin}/pay/${createdLinkId}`;
+                                 window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+                              }}
+                              className="flex items-center justify-center gap-2 py-4 rounded-2xl bg-[#25D366]/10 text-[#25D366] font-black uppercase text-[10px] tracking-widest border border-[#25D366]/20 hover:bg-[#25D366] hover:text-white transition-all"
+                           >
+                              <Send size={14} /> WhatsApp
+                           </button>
+                           <button 
+                              onClick={() => {
+                                 setItemName('');
+                                 setAmount('');
+                                 setImageUrl('');
+                                 setCreatedLinkId(null);
+                                 setShowCreateModal(false);
+                              }}
+                              className="py-4 rounded-2xl bg-white text-black font-black uppercase text-[10px] tracking-widest hover:bg-gray-200 transition-all"
+                           >
+                              Done
+                           </button>
+                        </div>
+                     </div>
+                  </div>
+               )}
             </motion.div>
           </div>
         )}

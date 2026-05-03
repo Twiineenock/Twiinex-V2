@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Shield, ArrowRight, Zap, Globe, Lock, Search, CheckCircle2, X, ExternalLink, Clock, Terminal, Copy, ChevronUp, ChevronDown, Database } from 'lucide-react';
+import { Shield, ArrowRight, Zap, Globe, Lock, CheckCircle2, X, ExternalLink, Clock, Terminal, Copy, ChevronUp, ChevronDown, Database } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { getTransaction } from '../api/escrow';

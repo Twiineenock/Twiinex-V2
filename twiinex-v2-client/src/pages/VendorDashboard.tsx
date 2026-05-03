@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Copy, Clock, ShieldCheck, TrendingUp, DollarSign, CheckCircle2, Share2, Send, X, Upload, Image as ImageIcon } from 'lucide-react';
+import { Plus, Copy, Clock, ShieldCheck, TrendingUp, DollarSign, CheckCircle2, Send, X, Upload } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { createEscrow, getTransactions, updateTransactionStatus } from '../api/escrow';
 

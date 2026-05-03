@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-const TX_BASE = `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/transactions`;
-const AUTH_BASE = `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/auth`;
+const TX_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8080/api/transactions';
+const AUTH_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8080/api/auth';
 
 export const createEscrow = async (vendorPhone: string, amount: number, description: string, imageUrl?: string) => {
   const response = await axios.post(`${TX_BASE}`, { vendorPhone, amount, description, imageUrl });

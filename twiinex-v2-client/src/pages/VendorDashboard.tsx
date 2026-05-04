@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { Plus, Copy, Clock, ShieldCheck, DollarSign, CheckCircle2, X, Camera, Image as ImageIcon, MessageSquare, LogOut, ChevronRight, User, Truck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { createEscrow, getTransactions, updateTransactionStatus } from '../api/escrow';

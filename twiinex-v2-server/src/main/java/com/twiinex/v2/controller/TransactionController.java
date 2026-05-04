@@ -137,6 +137,7 @@ public class TransactionController {
             Map<String, Object> mintResult = mintFuture.join();
 
             if ((Boolean) contractResult.getOrDefault("success", false)) {
+                String txId_onchain = (String) contractResult.get("transactionId");
                 String normalized = txId_onchain.replace("@", "-").replace(".", "-");
                 String[] parts = normalized.split("-");
                 String formattedTxId = txId_onchain; // fallback
@@ -156,6 +157,7 @@ public class TransactionController {
             
             Map<String, Object> contractResult = contractFuture.join();
             if ((Boolean) contractResult.getOrDefault("success", false)) {
+                String txId_onchain = (String) contractResult.get("transactionId");
                 String normalized = txId_onchain.replace("@", "-").replace(".", "-");
                 String[] parts = normalized.split("-");
                 String formattedTxId = txId_onchain; // fallback
@@ -176,6 +178,7 @@ public class TransactionController {
             Map<String, Object> burnResult = burnFuture.join();
 
             if ((Boolean) contractResult.getOrDefault("success", false)) {
+                String txId_onchain = (String) contractResult.get("transactionId");
                 String normalized = txId_onchain.replace("@", "-").replace(".", "-");
                 String[] parts = normalized.split("-");
                 String formattedTxId = txId_onchain; // fallback

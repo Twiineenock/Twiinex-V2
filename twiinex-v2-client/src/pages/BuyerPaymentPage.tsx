@@ -67,25 +67,28 @@ const BuyerPaymentPage = () => {
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const status = urlParams.get('status');
-    const txId = urlParams.get('transaction_id');
+    const flwTxId = urlParams.get('transaction_id');
     
-    if (status === 'completed' && txId && transaction?.status === 'PENDING') {
+    // Flutterwave uses 'successful' or 'completed'
+    if ((status === 'successful' || status === 'completed') && flwTxId && transaction?.status === 'PENDING') {
       const handleRedirectVerify = async () => {
         setVerifying(true);
         try {
-          await verifyTransaction(id!, txId);
-          // Clear URL params
+          // Add a small delay to ensure backend is ready
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          await verifyTransaction(id!, flwTxId);
+          // Clear URL params to prevent re-verification on refresh
           window.history.replaceState({}, document.title, window.location.pathname);
-          fetchTx();
+          await fetchTx();
         } catch (e) {
-          console.error(e);
+          console.error('Verification failed:', e);
         } finally {
           setVerifying(false);
         }
       };
       handleRedirectVerify();
     }
-  }, [transaction]);
+  }, [transaction, id]);
 
   useEffect(() => {
     fetchTx();

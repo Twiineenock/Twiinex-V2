@@ -85,13 +85,12 @@ const VendorDashboard = () => {
     setLoading(true);
     try {
       const response = await createEscrow(user.phone, parseFloat(amount), itemName, imageUrl);
-      if (response?.id) {
+      if (response?.id || response?.transaction?.id || response?.success) {
         // Zero-Click Success: Close immediately and clear
         setShowCreateModal(false);
         setItemName('');
         setAmount('');
         setImageUrl('');
-        // Optional: you could add a non-blocking toast here later
       }
       // Refresh the table to show the new link
       await fetchData(user.phone);

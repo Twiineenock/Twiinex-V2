@@ -109,38 +109,40 @@ public class TransactionController {
         eventLog.put("status", status);
         eventLog.put("timestamp", new Date().toString());
         eventLog.put("type", "LIFECYCLE_UPDATE");
-        eventLog.put("backend_log", "Processing status transition to " + status + " for link " + id);
-        eventLog.put("actor", "SYSTEM_ESCROW_ENGINE");
+        eventLog.put("backend_log", "Escrow Engine: Processing " + status + " transition for " + id);
+        eventLog.put("actor", "TWIINEX_ESCROW_V2");
+        eventLog.put("network", "Hedera Testnet");
 
         long amount = ((Number) tx.get("amount")).longValue();
 
         if ("FUNDED".equals(status)) {
-            // 1. On-Chain Deposit
             Map<String, Object> contractResult = hederaService.executeContractFunction("createOrder", id);
             if ((Boolean) contractResult.getOrDefault("success", false)) {
-                metadata.put("lastTxId", contractResult.get("transactionId"));
-                eventLog.put("contractTxId", contractResult.get("transactionId"));
+                String txId_onchain = (String) contractResult.get("transactionId");
+                metadata.put("lastTxId", txId_onchain);
+                eventLog.put("contractResult", contractResult);
+                eventLog.put("proof_url", "https://hashscan.io/testnet/transaction/" + txId_onchain.replace("@", "-").replaceFirst("\\.", "-"));
             }
-            // 2. Token Minting
             Map<String, Object> mintResult = hederaService.mintVaultTokens(amount, id);
             eventLog.put("htsMintResult", mintResult);
             
         } else if ("SHIPPED".equals(status)) {
-            // On-Chain Shipment Log
             Map<String, Object> contractResult = hederaService.executeContractFunction("markShipped", id);
             if ((Boolean) contractResult.getOrDefault("success", false)) {
-                metadata.put("lastTxId", contractResult.get("transactionId"));
-                eventLog.put("contractTxId", contractResult.get("transactionId"));
+                String txId_onchain = (String) contractResult.get("transactionId");
+                metadata.put("lastTxId", txId_onchain);
+                eventLog.put("contractResult", contractResult);
+                eventLog.put("proof_url", "https://hashscan.io/testnet/transaction/" + txId_onchain.replace("@", "-").replaceFirst("\\.", "-"));
             }
             
         } else if ("COMPLETED".equals(status)) {
-            // 1. On-Chain Release
             Map<String, Object> contractResult = hederaService.executeContractFunction("confirmReceipt", id);
             if ((Boolean) contractResult.getOrDefault("success", false)) {
-                metadata.put("lastTxId", contractResult.get("transactionId"));
-                eventLog.put("contractTxId", contractResult.get("transactionId"));
+                String txId_onchain = (String) contractResult.get("transactionId");
+                metadata.put("lastTxId", txId_onchain);
+                eventLog.put("contractResult", contractResult);
+                eventLog.put("proof_url", "https://hashscan.io/testnet/transaction/" + txId_onchain.replace("@", "-").replaceFirst("\\.", "-"));
             }
-            // 2. Token Burn
             Map<String, Object> burnResult = hederaService.burnVaultTokens(amount);
             eventLog.put("htsBurnResult", burnResult);
         }

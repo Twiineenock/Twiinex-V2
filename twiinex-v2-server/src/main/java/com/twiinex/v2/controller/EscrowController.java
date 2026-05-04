@@ -72,8 +72,25 @@ public class EscrowController {
         // For V2 Demo, we'll use the operator to trigger it.
         // escrowService.confirmReceipt(ContractId.fromString(contractIdStr));
 
-        // 2. Update Supabase
-        supabaseService.updateStatus(txId, "COMPLETED", null);
+        // 2. Update Supabase with log
+        Map<String, Object> tx = supabaseService.getTransactionById(txId);
+        Map<String, Object> metadata = (Map<String, Object>) tx.get("metadata");
+        if (metadata == null) metadata = new HashMap<>();
+        List<Map<String, Object>> history = (List<Map<String, Object>>) metadata.get("history");
+        if (history == null) {
+            history = new ArrayList<>();
+            metadata.put("history", history);
+        }
+
+        Map<String, Object> eventLog = new HashMap<>();
+        eventLog.put("status", "COMPLETED");
+        eventLog.put("timestamp", new Date().toString());
+        eventLog.put("type", "FUNDS_RELEASED");
+        eventLog.put("description", "Buyer confirmed receipt. Funds released to seller.");
+        eventLog.put("actor", "BUYER_SECURE_AUTH");
+        history.add(eventLog);
+
+        supabaseService.updateStatus(txId, "COMPLETED", metadata);
 
         return Map.of("success", true, "status", "COMPLETED");
     }

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
-import { Plus, Copy, Clock, ShieldCheck, DollarSign, CheckCircle2, X, Camera, Image as ImageIcon, MessageSquare, LogOut, ChevronRight, User } from 'lucide-react';
+import { Plus, Copy, Clock, ShieldCheck, DollarSign, CheckCircle2, X, Camera, Image as ImageIcon, MessageSquare, LogOut, ChevronRight, User, Truck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { createEscrow, getTransactions } from '../api/escrow';
+import { createEscrow, getTransactions, updateTransactionStatus } from '../api/escrow';
 
 const VendorDashboard = () => {
   const [itemName, setItemName] = useState('');
@@ -98,6 +98,21 @@ const VendorDashboard = () => {
       alert("Failed to create link. Please check your connection.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
+
+  const handleMarkShipped = async (txId: string) => {
+    setUpdatingId(txId);
+    try {
+      await updateTransactionStatus(txId, 'SHIPPED');
+      await fetchData(user.phone);
+    } catch (error) {
+      console.error('Failed to update status:', error);
+      alert("Failed to mark as shipped. Please try again.");
+    } finally {
+      setUpdatingId(null);
     }
   };
 
@@ -200,10 +215,25 @@ const VendorDashboard = () => {
                     </td>
                     <td className="px-6 py-4 text-xs text-text-muted">{link.date}</td>
                     <td className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex items-center justify-end gap-2 group-hover:opacity-100 transition-opacity">
+                        {link.status === 'FUNDED' && (
+                          <button 
+                            onClick={() => handleMarkShipped(link.id)}
+                            disabled={updatingId === link.id}
+                            className="btn-primary py-1 px-3 text-[10px] bg-brand hover:brightness-110 flex items-center gap-1.5"
+                            title="Mark as Shipped"
+                          >
+                            {updatingId === link.id ? (
+                              <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                            ) : (
+                              <Truck className="w-3 h-3" />
+                            )}
+                            Ship
+                          </button>
+                        )}
                         <button 
                           onClick={() => shareOnWhatsApp(link.id, link.item)}
-                          className="p-1.5 hover:bg-brand/10 text-text-muted hover:text-brand rounded"
+                          className="p-1.5 hover:bg-brand/10 text-text-muted hover:text-[#25D366] rounded transition-colors"
                           title="Share on WhatsApp"
                         >
                           <MessageSquare className="w-4 h-4" />
@@ -213,12 +243,14 @@ const VendorDashboard = () => {
                             navigator.clipboard.writeText(`${window.location.origin}/pay/${link.id}`);
                             alert("Link copied!");
                           }}
-                          className="p-1.5 hover:bg-brand/10 text-text-muted hover:text-brand rounded"
+                          className="p-1.5 hover:bg-brand/10 text-text-muted hover:text-brand rounded transition-colors"
                           title="Copy Link"
                         >
                           <Copy className="w-4 h-4" />
                         </button>
-                        <ChevronRight className="w-4 h-4 text-text-muted" />
+                        <Link to={`/pay/${link.id}`} className="p-1.5 hover:bg-brand/10 text-text-muted hover:text-primary rounded transition-colors">
+                          <ChevronRight className="w-4 h-4" />
+                        </Link>
                       </div>
                     </td>
                   </tr>

@@ -320,8 +320,8 @@ const BuyerPaymentPage = () => {
 
           <div className="space-y-4">
             {(transaction.metadata?.history || []).map((log: any, idx: number) => {
-              const eventName = log.event_type || log.type || 'Unknown Event';
-              const blockLabel = log.type === 'VAULT_GENESIS' || eventName.includes('Created') ? 'Genesis' : 'Live';
+              const eventName = log.event_type || log.status || log.type || log.action || 'Unknown Event';
+              const blockLabel = log.type === 'VAULT_GENESIS' || eventName.includes('Created') || eventName.includes('PENDING') ? 'Genesis' : 'Live';
               
               return (
                 <div key={idx} className="bg-[#151515] rounded-lg border border-white/5 p-5 hover:border-[#10b981]/30 transition-all group">
@@ -329,7 +329,7 @@ const BuyerPaymentPage = () => {
                     <div className="flex items-center gap-3">
                       <div className="w-1.5 h-1.5 rounded-full bg-[#10b981] shadow-[0_0_8px_#10b981]" />
                       <span className="text-[9px] font-black text-[#10b981] uppercase tracking-widest">
-                        Event: {eventName.replace('VAULT_', '').replace('PAYMENT_', '').replace('Emission', '')}
+                        Event: {eventName.replace('VAULT_', '').replace('PAYMENT_', '').replace('Emission', '').replace('CONTRACT_', '')}
                       </span>
                     </div>
                     <span className="text-[9px] font-mono text-text-muted uppercase">Block: {blockLabel}</span>
@@ -339,7 +339,7 @@ const BuyerPaymentPage = () => {
                       Proof: <span className="text-white font-medium">Hiero Consensus Message #{idx + 1}</span>
                     </div>
                     <a 
-                      href={log.proof_url || '#'} 
+                      href={log.proof_url || `https://hashscan.io/testnet/transaction/${transaction.metadata?.lastTxId?.replace('@', '-').replaceFirst('\\.', '-') || ''}`} 
                       target="_blank" 
                       rel="noopener noreferrer"
                       className="text-[10px] font-bold text-[#10b981] hover:underline opacity-0 group-hover:opacity-100 transition-opacity"
@@ -425,10 +425,15 @@ const BuyerPaymentPage = () => {
                       </div>
 
                       {(transaction.metadata?.history || []).map((log: any, idx: number) => {
-                        const eventName = log.event_type || log.type || 'Unknown Event';
-                        const timestamp = log.consensus_timestamp 
-                          ? new Date(parseFloat(log.consensus_timestamp) * 1000).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})
-                          : log.timestamp ? new Date(log.timestamp).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : 'Live';
+                        // Robust Key Extraction
+                        const eventName = log.event_type || log.status || log.type || log.action || 'Network_Emission';
+                        const rawTimestamp = log.consensus_timestamp || log.timestamp || log.at || log.created_at;
+                        
+                        const timestamp = rawTimestamp 
+                          ? (typeof rawTimestamp === 'number' || !isNaN(parseFloat(rawTimestamp)) 
+                              ? new Date(parseFloat(rawTimestamp) * (rawTimestamp > 10000000000 ? 1 : 1000)).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})
+                              : new Date(rawTimestamp).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}))
+                          : 'Live';
 
                         return (
                           <div 
@@ -443,9 +448,9 @@ const BuyerPaymentPage = () => {
                             }`} />
                             <div className="flex items-center gap-2 mb-1">
                               <span className={`px-1.5 py-0.5 rounded-[2px] text-[8px] font-bold uppercase tracking-tighter ${
-                                eventName.includes('Created') || eventName.includes('GENESIS') ? 'bg-brand/10 text-brand' : 'bg-purple-500/10 text-purple-400'
+                                eventName.includes('Created') || eventName.includes('GENESIS') || eventName.includes('PENDING') ? 'bg-brand/10 text-brand' : 'bg-purple-500/10 text-purple-400'
                               }`}>
-                                {eventName.includes('Created') || eventName.includes('GENESIS') ? 'SYS' : 'EVM'}
+                                {eventName.includes('Created') || eventName.includes('GENESIS') || eventName.includes('PENDING') ? 'SYS' : 'EVM'}
                               </span>
                               <span className="text-[9px] text-text-muted font-mono">{timestamp}</span>
                             </div>

@@ -86,10 +86,15 @@ const VendorDashboard = () => {
       const response = await createEscrow(user.phone, parseFloat(amount), itemName, imageUrl);
       if (response?.id) {
         setCreatedLinkId(response.id);
+        // Clear inputs immediately
+        setItemName('');
+        setAmount('');
+        setImageUrl('');
       }
-      fetchData(user.phone);
+      await fetchData(user.phone);
     } catch (error: any) {
       console.error('Failed to create escrow:', error);
+      alert("Failed to create link. Please check your connection.");
     } finally {
       setLoading(false);
     }
@@ -308,7 +313,7 @@ const VendorDashboard = () => {
                         <button 
                            onClick={handleCreateLink}
                            disabled={loading || !itemName || !amount}
-                           className="w-full btn-primary py-3 mt-4"
+                           className="w-full btn-primary py-3 mt-4 disabled:opacity-50 disabled:cursor-wait"
                         >
                            {loading ? 'Confirming on Hedera...' : 'Generate Secure Link'}
                         </button>
@@ -337,12 +342,12 @@ const VendorDashboard = () => {
                         </button>
                         <button 
                            onClick={() => {
-                             setItemName(''); setAmount(''); setImageUrl('');
-                             setCreatedLinkId(null); setShowCreateModal(false);
+                             setCreatedLinkId(null); 
+                             setShowCreateModal(false);
                            }}
-                           className="w-full btn-outline py-3"
+                           className="w-full btn-outline py-3 font-bold"
                         >
-                           Return to Dashboard
+                           View in Dashboard
                         </button>
                      </div>
                   </div>

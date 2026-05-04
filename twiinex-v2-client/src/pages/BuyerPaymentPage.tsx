@@ -24,6 +24,7 @@ const BuyerPaymentPage = () => {
   const [loading, setLoading] = useState(true);
   const [verifying, setVerifying] = useState(false);
   const [showAudit, setShowAudit] = useState(false);
+  const [showRawData, setShowRawData] = useState(false);
   
   const fetchTx = async () => {
     if (!id) return;
@@ -41,6 +42,30 @@ const BuyerPaymentPage = () => {
       setLoading(false);
     }
   };
+
+  // Detect and handle post-payment redirect
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const status = urlParams.get('status');
+    const txId = urlParams.get('transaction_id');
+    
+    if (status === 'completed' && txId && transaction?.status === 'PENDING') {
+      const handleRedirectVerify = async () => {
+        setVerifying(true);
+        try {
+          await verifyTransaction(id!, txId);
+          // Clear URL params
+          window.history.replaceState({}, document.title, window.location.pathname);
+          fetchTx();
+        } catch (e) {
+          console.error(e);
+        } finally {
+          setVerifying(false);
+        }
+      };
+      handleRedirectVerify();
+    }
+  }, [transaction]);
 
   useEffect(() => {
     fetchTx();
@@ -276,7 +301,7 @@ const BuyerPaymentPage = () => {
                 </div>
                 <div className="pt-4 border-t border-border-color">
                   <span className="label-text block mb-2">Live Proof of Transaction</span>
-                  <div className="flex flex-col gap-2">
+                  <div className="flex flex-col gap-2 mb-4">
                     <a 
                       href={`https://hashscan.io/testnet/transaction/${(transaction.metadata?.lastTxId || '').replace('@', '-').replace(/\.(?=\d+$)/, '-')}`}
                       target="_blank"
@@ -286,9 +311,32 @@ const BuyerPaymentPage = () => {
                       View Consensus Log on Hashscan <ExternalLink className="w-3 h-3" />
                     </a>
                     <p className="text-[10px] text-text-muted leading-relaxed italic">
-                      This transaction is mathematically proven and immutable. Twiinex uses Hedera HCS to ensure every step of the escrow lifecycle is recorded on a public ledger that neither the buyer nor seller can alter.
+                      This transaction is mathematically proven and immutable. Every step is recorded on the Hedera public ledger.
                     </p>
                   </div>
+
+                  {/* Mighty JSON Logs Section */}
+                  <button 
+                    onClick={() => setShowRawData(!showRawData)}
+                    className="w-full py-2 bg-primary-bg border border-border-color rounded text-[10px] font-bold uppercase tracking-widest hover:bg-tertiary-bg transition-colors flex items-center justify-center gap-2"
+                  >
+                    {showRawData ? 'Hide' : 'Show'} Raw Blockchain Data
+                  </button>
+
+                  <AnimatePresence>
+                    {showRawData && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="mt-4"
+                      >
+                        <pre className="bg-black text-[#00ff00] p-4 rounded font-mono text-[10px] overflow-x-auto max-h-60 shadow-inner">
+                          {JSON.stringify(transaction, null, 2)}
+                        </pre>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               </div>
             </motion.div>

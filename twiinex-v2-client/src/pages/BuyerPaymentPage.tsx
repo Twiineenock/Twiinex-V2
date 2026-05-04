@@ -340,7 +340,7 @@ const BuyerPaymentPage = () => {
                       Proof: <span className="text-white font-medium">Hiero Consensus Message #{idx + 1}</span>
                     </div>
                     <a 
-                      href={log.proof_url || `https://hashscan.io/testnet/transaction/${transaction.metadata?.lastTxId?.replace('@', '-').replaceFirst('\\.', '-') || ''}`} 
+                      href={log.proof_url || `https://hashscan.io/testnet/transaction/${(transaction.metadata?.lastTxId || '').replace('@', '-').replace('.', '-')}`} 
                       target="_blank" 
                       rel="noopener noreferrer"
                       className="text-[10px] font-bold text-[#10b981] hover:underline opacity-0 group-hover:opacity-100 transition-opacity"

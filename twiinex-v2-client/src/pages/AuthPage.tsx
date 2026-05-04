@@ -60,7 +60,7 @@ const AuthPage = () => {
               SECURE YOUR <span className="text-brand">FUTURE</span> TRANSACTIONS.
             </h1>
             <p className="text-xl text-gray-400 font-medium mb-12 leading-relaxed">
-              Twiinex V2 provides institutional-grade escrow services powered by Hiero Enterprise Java and Hedera DLT.
+              Twiinex provides institutional-grade escrow services powered by Hiero Enterprise Java and Hedera DLT.
             </p>
 
             <div className="space-y-6">

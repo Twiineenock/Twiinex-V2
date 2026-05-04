@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Sun, Moon, ShieldCheck, ExternalLink } from 'lucide-react';
+import { Sun, Moon, ExternalLink } from 'lucide-react';
+import logo from '../assets/logo.png';
+
 
 const Header = () => {
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'dark');
@@ -40,10 +42,8 @@ const Header = () => {
     <header className="h-[64px] border-b border-border-color bg-primary-bg sticky top-0 z-50 flex items-center justify-between px-6 shadow-sm">
       <div className="flex items-center gap-8">
         <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-          <div className="bg-brand p-1.5 rounded">
-            <ShieldCheck className="w-5 h-5 text-white" />
-          </div>
-          <span className="font-bold text-lg tracking-tight">Twiinex<span className="text-brand">V2</span></span>
+          <img src={logo} alt="Twiinex Logo" className="w-8 h-8 object-contain" />
+          <span className="font-bold text-lg tracking-tight">Twiinex</span>
         </Link>
         
         <nav className="hidden md:flex items-center gap-6 text-sm font-medium">

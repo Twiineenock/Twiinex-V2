@@ -572,7 +572,7 @@ const BuyerPaymentPage = () => {
               </div>
             </div>
             <div className="text-[10px] uppercase tracking-tighter font-black opacity-80">
-              © TWIINEX PROTOCOL V2.0 | HIERO ENTERPRISE
+              © TWIINEX PROTOCOL | HIERO ENTERPRISE
             </div>
           </div>
         </div>

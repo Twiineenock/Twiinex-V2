@@ -1,10 +1,16 @@
-import { useState } from 'react';
-import { Search, ShieldCheck, ShoppingBag, CheckCircle2, ArrowRight, ExternalLink, HelpCircle } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Search, ShoppingBag, CheckCircle2, ArrowRight, ExternalLink, ShieldCheck, Truck, Lock } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 
 const LandingPage = () => {
   const [searchId, setSearchId] = useState('');
+  const [user, setUser] = useState<any>(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem('twiinex_user');
+    if (storedUser) setUser(JSON.parse(storedUser));
+  }, []);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -16,88 +22,134 @@ const LandingPage = () => {
   return (
     <div className="max-w-6xl mx-auto px-6 py-12">
       {/* Hero Section */}
-      <div className="text-center mb-16">
-        <h1 className="mb-4 text-4xl">Secure Social Commerce with <span className="text-brand">Twiinex</span></h1>
-        <p className="text-text-secondary max-w-2xl mx-auto text-base">
-          Twiinex protects your money during social media transactions. We hold payments in a secure vault and only release them when you receive your items.
-        </p>
+      <div className="text-center mb-12">
+        {user ? (
+          <div className="animate-in fade-in slide-in-from-top-4 duration-700">
+            <h1 className="mb-4 text-4xl">Welcome back, <span className="text-brand">{user.name}</span></h1>
+            <p className="text-text-secondary max-w-2xl mx-auto mb-8">
+              Manage your orders and create new trust links from your dashboard.
+            </p>
+            <Link to="/dashboard" className="btn-primary px-10 py-3 inline-flex items-center gap-2">
+              Go to Dashboard <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+        ) : (
+          <div className="animate-in fade-in slide-in-from-top-4 duration-700">
+            <h1 className="mb-4 text-4xl font-black tracking-tight">Secure Social Commerce with <span className="text-brand">Twiinex</span></h1>
+            <p className="text-text-secondary max-w-2xl mx-auto text-lg">
+              The trust layer for WhatsApp & Instagram trade. Secure payments in a blockchain-backed vault.
+            </p>
+          </div>
+        )}
       </div>
 
-      {/* Search Bar - Hashscan Style */}
+      {/* Search Bar - Centralized */}
       <div className="max-w-2xl mx-auto mb-20">
+        <div className="text-center mb-4">
+          <span className="text-[10px] font-bold uppercase tracking-widest text-text-muted">Verify a Trust Link</span>
+        </div>
         <form onSubmit={handleSearch} className="relative group">
           <input
             type="text"
-            placeholder="Enter Trust Link ID (e.g. TX-123456789)"
-            className="w-full bg-secondary-bg border border-border-color rounded-lg px-5 py-4 pl-12 focus:outline-none focus:border-brand shadow-sm transition-all"
+            placeholder="Enter Link ID (e.g. TX-123456789)"
+            className="w-full bg-secondary-bg border border-border-color rounded-xl px-6 py-5 pl-14 focus:outline-none focus:border-brand shadow-xl transition-all text-lg font-medium"
             value={searchId}
             onChange={(e) => setSearchId(e.target.value)}
           />
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted group-focus-within:text-brand transition-colors" />
-          <button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 btn-primary py-2 px-6 text-sm">
-            Verify Link
+          <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-6 h-6 text-text-muted group-focus-within:text-brand transition-colors" />
+          <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2 btn-primary py-2.5 px-8 text-sm font-bold rounded-lg">
+            Verify
           </button>
         </form>
       </div>
 
-      {/* Simplified "How it Works" */}
-      <div className="grid md:grid-cols-3 gap-8 mb-20">
-        <div className="section-card">
-          <div className="bg-brand/10 w-10 h-10 rounded flex items-center justify-center mb-4 text-brand">
-            <ShoppingBag className="w-5 h-5" />
+      {/* Brief Directions Section - Only for Logged Out */}
+      {!user && (
+        <div className="grid md:grid-cols-2 gap-12 mb-20 animate-in fade-in slide-in-from-bottom-8 duration-1000">
+          {/* For Sellers */}
+          <div className="bg-secondary-bg/50 border border-border-color p-8 rounded-2xl">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="bg-brand/10 p-2 rounded-lg text-brand">
+                <ShoppingBag className="w-5 h-5" />
+              </div>
+              <h3 className="text-xl font-bold">For Sellers</h3>
+            </div>
+            <ul className="space-y-4">
+              <li className="flex items-start gap-3 text-sm text-text-secondary">
+                <div className="w-5 h-5 rounded-full bg-brand/10 flex items-center justify-center shrink-0 text-[10px] font-bold text-brand mt-0.5">1</div>
+                <span>Create a secure link in seconds.</span>
+              </li>
+              <li className="flex items-start gap-3 text-sm text-text-secondary">
+                <div className="w-5 h-5 rounded-full bg-brand/10 flex items-center justify-center shrink-0 text-[10px] font-bold text-brand mt-0.5">2</div>
+                <span>Share with your buyer on WhatsApp/IG.</span>
+              </li>
+              <li className="flex items-start gap-3 text-sm text-text-secondary">
+                <div className="w-5 h-5 rounded-full bg-brand/10 flex items-center justify-center shrink-0 text-[10px] font-bold text-brand mt-0.5">3</div>
+                <span>Ship only when funds are secured in the vault.</span>
+              </li>
+            </ul>
+            <Link to="/login" className="mt-8 text-brand font-bold text-sm flex items-center gap-2 hover:gap-3 transition-all">
+              Start Selling Securely <ArrowRight className="w-4 h-4" />
+            </Link>
           </div>
-          <h3 className="mb-2">1. Find a Vendor</h3>
-          <p className="text-sm text-text-secondary">
-            Look for sellers using Twiinex Trust Links on WhatsApp or Instagram.
-          </p>
-        </div>
 
-        <div className="section-card">
-          <div className="bg-brand/10 w-10 h-10 rounded flex items-center justify-center mb-4 text-brand">
-            <ShieldCheck className="w-5 h-5" />
+          {/* For Buyers */}
+          <div className="bg-secondary-bg/50 border border-border-color p-8 rounded-2xl">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="bg-success/10 p-2 rounded-lg text-success">
+                <ShieldCheck className="w-5 h-5" />
+              </div>
+              <h3 className="text-xl font-bold">For Buyers</h3>
+            </div>
+            <ul className="space-y-4">
+              <li className="flex items-start gap-3 text-sm text-text-secondary">
+                <div className="w-5 h-5 rounded-full bg-success/10 flex items-center justify-center shrink-0 text-[10px] font-bold text-success mt-0.5">1</div>
+                <span>Verify the link ID above.</span>
+              </li>
+              <li className="flex items-start gap-3 text-sm text-text-secondary">
+                <div className="w-5 h-5 rounded-full bg-success/10 flex items-center justify-center shrink-0 text-[10px] font-bold text-success mt-0.5">2</div>
+                <span>Pay securely into the Twiinex vault.</span>
+              </li>
+              <li className="flex items-start gap-3 text-sm text-text-secondary">
+                <div className="w-5 h-5 rounded-full bg-success/10 flex items-center justify-center shrink-0 text-[10px] font-bold text-success mt-0.5">3</div>
+                <span>Release funds only after inspection.</span>
+              </li>
+            </ul>
+            <p className="mt-8 text-xs text-text-muted font-medium">
+              No login required for buyers. Just verify and pay.
+            </p>
           </div>
-          <h3 className="mb-2">2. Pay into Vault</h3>
-          <p className="text-sm text-text-secondary">
-            Pay safely via Mobile Money. Your funds are locked until the item is delivered.
-          </p>
         </div>
+      )}
 
-        <div className="section-card">
-          <div className="bg-brand/10 w-10 h-10 rounded flex items-center justify-center mb-4 text-brand">
-            <CheckCircle2 className="w-5 h-5" />
-          </div>
-          <h3 className="mb-2">3. Confirm & Release</h3>
-          <p className="text-sm text-text-secondary">
-            Once you have the item, confirm receipt to release payment to the vendor.
-          </p>
-        </div>
-      </div>
-
-      {/* CTA Section */}
-      <div className="section-card text-center bg-brand/5 border-brand/20 py-12">
-        <h2 className="mb-4">Are you a Business?</h2>
-        <p className="text-text-secondary mb-8 max-w-xl mx-auto">
-          Start building trust with your customers. Create secure payment links in seconds and manage all your orders in one clean dashboard.
-        </p>
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <Link to="/login" className="btn-primary px-10 py-3 flex items-center gap-2">
-            Get Started as Vendor <ArrowRight className="w-4 h-4" />
-          </Link>
-          <Link to="/how-it-works" className="btn-outline px-10 py-3 flex items-center gap-2">
-            Learn More <HelpCircle className="w-4 h-4" />
-          </Link>
-        </div>
-      </div>
-
-      {/* Blockchain Proof Footer */}
-      <div className="mt-20 pt-8 border-t border-border-color flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-text-muted uppercase font-semibold">
+      {/* Trust Badges */}
+      <div className="flex flex-wrap justify-center gap-8 md:gap-16 opacity-50 grayscale hover:grayscale-0 transition-all duration-500">
         <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-success animate-pulse" />
-          Powered by Hedera HCS & Hiero Java
+          <Lock className="w-4 h-4 text-brand" />
+          <span className="text-[10px] font-black uppercase tracking-widest">Secured by Hedera</span>
         </div>
-        <div className="flex items-center gap-4">
-          <a href="#" className="hover:text-brand flex items-center gap-1">Security Audit <ExternalLink className="w-3 h-3" /></a>
-          <a href="#" className="hover:text-brand flex items-center gap-1">Terms of Service</a>
+        <div className="flex items-center gap-2">
+          <Truck className="w-4 h-4 text-brand" />
+          <span className="text-[10px] font-black uppercase tracking-widest">Escrow Protection</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <CheckCircle2 className="w-4 h-4 text-brand" />
+          <span className="text-[10px] font-black uppercase tracking-widest">Verified Vendors</span>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div className="mt-20 pt-8 border-t border-border-color flex flex-col md:flex-row items-center justify-between gap-4 text-[10px] text-text-muted uppercase font-bold tracking-widest">
+        <div className="flex items-center gap-2">
+          <div className="w-1.5 h-1.5 rounded-full bg-success animate-pulse shadow-[0_0_8px_#10b981]" />
+          Network Status: Operational
+        </div>
+        <div className="flex items-center gap-6">
+          <a href="#" className="hover:text-brand transition-colors">Privacy</a>
+          <a href="#" className="hover:text-brand transition-colors">Terms</a>
+          <a href="https://hashscan.io" target="_blank" className="flex items-center gap-1 hover:text-brand transition-colors">
+            Explorer <ExternalLink className="w-2.5 h-2.5" />
+          </a>
         </div>
       </div>
     </div>

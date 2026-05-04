@@ -117,6 +117,14 @@ const VendorDashboard = () => {
     }
   };
 
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  const handleCopyLink = (id: string) => {
+    navigator.clipboard.writeText(`${window.location.origin}/pay/${id}`);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
+
   const shareOnWhatsApp = (id: string, item: string) => {
     const text = `Hey! Use this secure Trust Link to pay for ${item}: ${window.location.origin}/pay/${id}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
@@ -240,14 +248,15 @@ const VendorDashboard = () => {
                           <MessageSquare className="w-4 h-4" />
                         </button>
                         <button 
-                          onClick={() => {
-                            navigator.clipboard.writeText(`${window.location.origin}/pay/${link.id}`);
-                            alert("Link copied!");
-                          }}
+                          onClick={() => handleCopyLink(link.id)}
                           className="p-1.5 hover:bg-brand/10 text-text-muted hover:text-brand rounded transition-colors"
                           title="Copy Link"
                         >
-                          <Copy className="w-4 h-4" />
+                          {copiedId === link.id ? (
+                            <CheckCircle2 className="w-4 h-4 text-success animate-in zoom-in duration-200" />
+                          ) : (
+                            <Copy className="w-4 h-4" />
+                          )}
                         </button>
                         <Link to={`/pay/${link.id}`} className="p-1.5 hover:bg-brand/10 text-text-muted hover:text-primary rounded transition-colors">
                           <ChevronRight className="w-4 h-4" />

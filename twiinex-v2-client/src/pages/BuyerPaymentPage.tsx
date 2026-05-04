@@ -45,6 +45,14 @@ const BuyerPaymentPage = () => {
   const [verifying, setVerifying] = useState(false);
   const [showAudit, setShowAudit] = useState(false);
   const [showRawData, setShowRawData] = useState<number | null>(0);
+  const [jsonCopied, setJsonCopied] = useState(false);
+
+  const handleCopyJSON = () => {
+    const log = transaction.metadata?.history?.[showRawData as number] || transaction;
+    navigator.clipboard.writeText(JSON.stringify(log, null, 2));
+    setJsonCopied(true);
+    setTimeout(() => setJsonCopied(false), 2000);
+  };
   
   const fetchTx = async () => {
     if (!id) return;
@@ -369,14 +377,14 @@ const BuyerPaymentPage = () => {
                         <span className="text-[10px] font-mono text-success uppercase tracking-widest">Live HCS Console</span>
                       </div>
                       <button 
-                        onClick={() => {
-                          const log = transaction.metadata?.history?.[showRawData as number] || transaction;
-                          navigator.clipboard.writeText(JSON.stringify(log, null, 2));
-                          alert('Log JSON Copied!');
-                        }}
+                        onClick={handleCopyJSON}
                         className="text-[9px] font-bold text-brand hover:underline flex items-center gap-1"
                       >
-                        Copy JSON Payload
+                        {jsonCopied ? (
+                          <span className="flex items-center gap-1 text-success">
+                            <CheckCircle2 className="w-2.5 h-2.5" /> Copied Payload!
+                          </span>
+                        ) : 'Copy JSON Payload'}
                       </button>
                     </div>
                     

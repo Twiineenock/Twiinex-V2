@@ -125,6 +125,12 @@ const VendorDashboard = () => {
     setTimeout(() => setCopiedId(null), 2000);
   };
 
+  const handleCopyId = (id: string) => {
+    navigator.clipboard.writeText(id);
+    setCopiedId(id + '_id');
+    setTimeout(() => setCopiedId(null), 2000);
+  };
+
   const shareOnWhatsApp = (id: string, item: string) => {
     const text = `Hey! Use this secure Trust Link to pay for ${item}: ${window.location.origin}/pay/${id}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
@@ -185,7 +191,79 @@ const VendorDashboard = () => {
             </div>
           </div>
           
-          <div className="overflow-x-auto">
+          {/* Mobile View: Cards */}
+          <div className="md:hidden divide-y divide-border-color">
+            {links.map((link, i) => (
+              <div key={i} className="p-4 space-y-4">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <p className="text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Details</p>
+                    <p className="font-bold text-sm">{link.item}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Status</p>
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                      link.status === 'COMPLETED' ? 'bg-success/10 text-success' :
+                      link.status === 'FUNDED' ? 'bg-brand/10 text-brand' : 
+                      link.status === 'SHIPPED' ? 'bg-blue-500/10 text-blue-500' :
+                      'bg-tertiary-bg text-text-muted'
+                    }`}>
+                      {link.status}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">ID</p>
+                    <div className="flex items-center gap-1.5 group">
+                      <span className="font-mono text-[10px] text-text-muted">{link.id}</span>
+                      <button 
+                        onClick={() => handleCopyId(link.id)} 
+                        className="p-1 hover:bg-brand/10 rounded transition-colors text-brand"
+                        title="Copy ID"
+                      >
+                        {copiedId === link.id + '_id' ? <CheckCircle2 className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                      </button>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Amount</p>
+                    <p className="font-mono font-bold text-brand">UGX {link.amount}</p>
+                  </div>
+                </div>
+
+                <div className="flex justify-between items-center pt-2">
+                  <span className="text-[10px] text-text-muted">{link.date}</span>
+                  <div className="flex items-center gap-2">
+                    {link.status === 'FUNDED' && (
+                      <button 
+                        onClick={() => handleMarkShipped(link.id)}
+                        className="btn-primary py-1.5 px-3 text-[10px] bg-brand flex items-center gap-1.5"
+                      >
+                        <Truck className="w-3 h-3" /> Ship
+                      </button>
+                    )}
+                    <button 
+                      onClick={() => shareOnWhatsApp(link.id, link.item)}
+                      className="p-2 border border-border-color rounded text-text-muted"
+                    >
+                      <MessageSquare className="w-4 h-4" />
+                    </button>
+                    <button 
+                      onClick={() => handleCopyLink(link.id)}
+                      className="p-2 border border-border-color rounded text-text-muted"
+                    >
+                      {copiedId === link.id ? <CheckCircle2 className="w-4 h-4 text-success" /> : <Copy className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop View: Table */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-tertiary-bg/50">
@@ -201,7 +279,18 @@ const VendorDashboard = () => {
                 {links.map((link, i) => (
                   <tr key={i} className="hover:bg-secondary-bg/50 transition-colors group">
                     <td className="px-6 py-4 font-semibold">{link.item}</td>
-                    <td className="px-6 py-4"><span className="value-text text-text-muted">{link.id}</span></td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2 group/id">
+                        <span className="value-text text-text-muted">{link.id}</span>
+                        <button 
+                          onClick={() => handleCopyId(link.id)}
+                          className="opacity-0 group-hover/id:opacity-100 p-1 hover:bg-brand/10 rounded transition-all text-brand"
+                          title="Copy Transaction ID"
+                        >
+                          {copiedId === link.id + '_id' ? <CheckCircle2 className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                        </button>
+                      </div>
+                    </td>
                     <td className="px-6 py-4 font-mono font-bold text-brand">UGX {link.amount}</td>
                     <td className="px-6 py-4">
                       <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${

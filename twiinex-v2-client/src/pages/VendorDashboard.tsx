@@ -85,11 +85,12 @@ const VendorDashboard = () => {
     try {
       const response = await createEscrow(user.phone, parseFloat(amount), itemName, imageUrl);
       if (response?.id) {
-        setCreatedLinkId(response.id);
-        // Clear inputs immediately
+        // Success! Close modal and refresh table
+        setShowCreateModal(false);
         setItemName('');
         setAmount('');
         setImageUrl('');
+        alert(`Link Created: ${itemName}`);
       }
       await fetchData(user.phone);
     } catch (error: any) {
@@ -99,17 +100,6 @@ const VendorDashboard = () => {
       setLoading(false);
     }
   };
-
-  // Auto-close modal after success
-  useEffect(() => {
-    if (createdLinkId) {
-      const timer = setTimeout(() => {
-        setCreatedLinkId(null);
-        setShowCreateModal(false);
-      }, 2000); // 2 seconds to see the success state
-      return () => clearTimeout(timer);
-    }
-  }, [createdLinkId]);
 
   const shareOnWhatsApp = (id: string, item: string) => {
     const text = `Hey! Use this secure Trust Link to pay for ${item}: ${window.location.origin}/pay/${id}`;

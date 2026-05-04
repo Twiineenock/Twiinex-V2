@@ -103,6 +103,7 @@ const BuyerPaymentPage = () => {
       tx_ref: `TX-${id}-${Date.now()}`,
       amount: transaction.amount,
       currency: "UGX",
+      redirect_url: window.location.href,
       customer: {
         email: "buyer@twiinex.com",
         phone_number: "0770000000",
@@ -111,9 +112,14 @@ const BuyerPaymentPage = () => {
       callback: async (paymentResponse: any) => {
          if (paymentResponse.status === "successful") {
            setVerifying(true);
-           await verifyTransaction(id!, paymentResponse.transaction_id);
-           fetchTx();
-           setVerifying(false);
+           try {
+             await verifyTransaction(id!, paymentResponse.transaction_id);
+             fetchTx();
+           } catch (e) {
+             console.error(e);
+           } finally {
+             setVerifying(false);
+           }
          }
       },
       customizations: {

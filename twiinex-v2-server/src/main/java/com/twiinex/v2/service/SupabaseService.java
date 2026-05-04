@@ -177,6 +177,7 @@ public class SupabaseService {
     public void updateStatus(String txId, String status, Map<String, Object> additionalMetadata) {
         try {
             String url = supabaseUrl + "/transactions?id=eq." + txId;
+            log.info("Updating status to {} for txId: {}", status, txId);
             
             Map<String, Object> body = new HashMap<>();
             body.put("status", status);
@@ -185,12 +186,15 @@ public class SupabaseService {
             }
 
             HttpHeaders headers = getHeaders();
-            headers.set("Prefer", "return=representation");
+            // Remove representation to reduce response size and potential parsing issues
+            headers.remove("Prefer"); 
             
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
-            restTemplate.exchange(url, HttpMethod.PATCH, entity, Void.class);
+            ResponseEntity<Object> response = restTemplate.exchange(url, HttpMethod.PATCH, entity, Object.class);
+            log.info("Supabase update status response: {}", response.getStatusCode());
         } catch (Exception e) {
-            log.error("Supabase update failed: {}", e.getMessage());
+            log.error("❌ SUPABASE UPDATE FAILED: {}", e.getMessage());
+            // Log full error for debugging if needed
         }
     }
 }

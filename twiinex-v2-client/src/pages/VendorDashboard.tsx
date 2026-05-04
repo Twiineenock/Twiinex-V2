@@ -100,6 +100,17 @@ const VendorDashboard = () => {
     }
   };
 
+  // Auto-close modal after success
+  useEffect(() => {
+    if (createdLinkId) {
+      const timer = setTimeout(() => {
+        setCreatedLinkId(null);
+        setShowCreateModal(false);
+      }, 2000); // 2 seconds to see the success state
+      return () => clearTimeout(timer);
+    }
+  }, [createdLinkId]);
+
   const shareOnWhatsApp = (id: string, item: string) => {
     const text = `Hey! Use this secure Trust Link to pay for ${item}: ${window.location.origin}/pay/${id}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');

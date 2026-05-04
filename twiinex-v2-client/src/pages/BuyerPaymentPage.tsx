@@ -10,12 +10,32 @@ declare global {
   }
 }
 
-const LoadingOverlay = ({ message }: { message: string }) => (
-  <div className="fixed inset-0 bg-primary-bg/80 flex flex-col items-center justify-center z-[100] backdrop-blur-sm">
-    <div className="w-10 h-10 border-4 border-brand border-t-transparent rounded-full animate-spin mb-4" />
-    <p className="text-primary font-bold text-sm">{message}</p>
-  </div>
-);
+const LoadingOverlay = ({ message }: { message: string }) => {
+  const [showRetry, setShowRetry] = useState(false);
+  
+  useEffect(() => {
+    const timer = setTimeout(() => setShowRetry(true), 8000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  return (
+    <div className="fixed inset-0 bg-primary-bg/80 flex flex-col items-center justify-center z-[100] backdrop-blur-sm">
+      <div className="w-10 h-10 border-4 border-brand border-t-transparent rounded-full animate-spin mb-4" />
+      <p className="text-primary font-bold text-sm text-center px-6">{message}</p>
+      {showRetry && (
+        <div className="mt-8 text-center animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <p className="text-xs text-text-muted mb-4 px-10">Verification is taking longer than usual. The blockchain might be busy.</p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="btn-outline px-6 py-2 text-xs"
+          >
+            Refresh & Check Status
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
 
 const BuyerPaymentPage = () => {
   const { id } = useParams<{ id: string }>();

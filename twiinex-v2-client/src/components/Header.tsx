@@ -40,10 +40,10 @@ const Header = () => {
 
 
   return (
-    <header className="h-[64px] border-b border-border-color bg-primary-bg sticky top-0 z-50 flex items-center justify-between px-6 shadow-sm">
+    <header className="h-[80px] border-b border-border-color bg-primary-bg sticky top-0 z-50 flex items-center justify-between px-6 shadow-sm">
       <div className="flex items-center gap-8">
         <Link to="/" className="flex items-center hover:opacity-80 transition-opacity">
-          <img src={currentLogo} alt="Twiinex" className="h-10 md:h-12 w-auto object-contain" />
+          <img src={currentLogo} alt="Twiinex" className="h-12 md:h-16 w-auto object-contain" />
         </Link>
         
         <nav className="hidden md:flex items-center gap-6 text-sm font-medium">

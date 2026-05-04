@@ -427,12 +427,6 @@ const BuyerPaymentPage = () => {
 
                       {(() => {
                         // 1. Collect real history & identify key milestones
-                        const realHistory = transaction.metadata?.history || [];
-                        const hasGenesis = realHistory.some((l: any) => (l.event_type || l.status || '').includes('Created') || (l.event_type || l.status || '').includes('GENESIS'));
-                        const hasDeposit = realHistory.some((l: any) => (l.event_type || l.status || '').includes('Deposited') || (l.event_type || l.status || '').includes('FUNDED'));
-                        const hasShip = realHistory.some((l: any) => (l.event_type || l.status || '').includes('Shipped') || (l.event_type || l.status || '').includes('SHIPPED'));
-                        const hasRelease = realHistory.some((l: any) => (l.event_type || l.status || '').includes('Released') || (l.event_type || l.status || '').includes('COMPLETED'));
-
                         // 2. Synthesize/Clean the Forensic Timeline
                         const contractId = transaction.metadata?.contractId || "0.0.5284312";
                         const vaultId = transaction.metadata?.hcsTopicId || "0.0.8806492";

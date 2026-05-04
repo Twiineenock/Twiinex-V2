@@ -319,32 +319,37 @@ const BuyerPaymentPage = () => {
           </div>
 
           <div className="space-y-4">
-            {(transaction.metadata?.history || []).map((log: any, idx: number) => (
-              <div key={idx} className="bg-[#151515] rounded-lg border border-white/5 p-5 hover:border-[#10b981]/30 transition-all group">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-1.5 h-1.5 rounded-full bg-[#10b981] shadow-[0_0_8px_#10b981]" />
-                    <span className="text-[9px] font-black text-[#10b981] uppercase tracking-widest">
-                      Event: {log.type?.replace('VAULT_', '').replace('PAYMENT_', '')}
-                    </span>
+            {(transaction.metadata?.history || []).map((log: any, idx: number) => {
+              const eventName = log.event_type || log.type || 'Unknown Event';
+              const blockLabel = log.type === 'VAULT_GENESIS' || eventName.includes('Created') ? 'Genesis' : 'Live';
+              
+              return (
+                <div key={idx} className="bg-[#151515] rounded-lg border border-white/5 p-5 hover:border-[#10b981]/30 transition-all group">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-1.5 h-1.5 rounded-full bg-[#10b981] shadow-[0_0_8px_#10b981]" />
+                      <span className="text-[9px] font-black text-[#10b981] uppercase tracking-widest">
+                        Event: {eventName.replace('VAULT_', '').replace('PAYMENT_', '').replace('Emission', '')}
+                      </span>
+                    </div>
+                    <span className="text-[9px] font-mono text-text-muted uppercase">Block: {blockLabel}</span>
                   </div>
-                  <span className="text-[9px] font-mono text-text-muted uppercase">Block: {log.type === 'VAULT_GENESIS' ? 'Genesis' : 'Live'}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="text-[11px] text-text-muted">
-                    Proof: <span className="text-white font-medium">Hiero Consensus Message #{idx + 1}</span>
+                  <div className="flex items-center justify-between">
+                    <div className="text-[11px] text-text-muted">
+                      Proof: <span className="text-white font-medium">Hiero Consensus Message #{idx + 1}</span>
+                    </div>
+                    <a 
+                      href={log.proof_url || '#'} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-[10px] font-bold text-[#10b981] hover:underline opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      Verify Transaction ↗
+                    </a>
                   </div>
-                  <a 
-                    href={log.proof_url || '#'} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="text-[10px] font-bold text-[#10b981] hover:underline opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    Verify Transaction ↗
-                  </a>
                 </div>
-              </div>
-            ))}
+              );
+            })}
             {(!transaction.metadata?.history || transaction.metadata.history.length === 0) && (
               <div className="text-center py-12 border-2 border-dashed border-white/5 rounded-xl">
                 <p className="text-[11px] text-text-muted uppercase tracking-widest font-bold">Awaiting Network Consensus...</p>
@@ -419,34 +424,39 @@ const BuyerPaymentPage = () => {
                         </div>
                       </div>
 
-                      {(transaction.metadata?.history || []).map((log: any, idx: number) => (
-                        <div 
-                          key={idx}
-                          onClick={() => setShowRawData(idx)}
-                          className={`group relative pl-4 border-l cursor-pointer transition-all ${
-                            showRawData === idx ? 'border-[#10b981]' : 'border-white/10 hover:border-white/30'
-                          }`}
-                        >
-                          <div className={`absolute left-[-4.5px] top-0 w-2 h-2 rounded-full ${
-                            showRawData === idx ? 'bg-[#10b981] shadow-[0_0_8px_#10b981]' : 'bg-white/10'
-                          }`} />
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className={`px-1.5 py-0.5 rounded-[2px] text-[8px] font-bold uppercase tracking-tighter ${
-                              log.type === 'VAULT_GENESIS' ? 'bg-brand/10 text-brand' : 'bg-purple-500/10 text-purple-400'
+                      {(transaction.metadata?.history || []).map((log: any, idx: number) => {
+                        const eventName = log.event_type || log.type || 'Unknown Event';
+                        const timestamp = log.consensus_timestamp 
+                          ? new Date(parseFloat(log.consensus_timestamp) * 1000).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})
+                          : log.timestamp ? new Date(log.timestamp).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : 'Live';
+
+                        return (
+                          <div 
+                            key={idx}
+                            onClick={() => setShowRawData(idx)}
+                            className={`group relative pl-4 border-l cursor-pointer transition-all ${
+                              showRawData === idx ? 'border-[#10b981]' : 'border-white/10 hover:border-white/30'
+                            }`}
+                          >
+                            <div className={`absolute left-[-4.5px] top-0 w-2 h-2 rounded-full ${
+                              showRawData === idx ? 'bg-[#10b981] shadow-[0_0_8px_#10b981]' : 'bg-white/10'
+                            }`} />
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className={`px-1.5 py-0.5 rounded-[2px] text-[8px] font-bold uppercase tracking-tighter ${
+                                eventName.includes('Created') || eventName.includes('GENESIS') ? 'bg-brand/10 text-brand' : 'bg-purple-500/10 text-purple-400'
+                              }`}>
+                                {eventName.includes('Created') || eventName.includes('GENESIS') ? 'SYS' : 'EVM'}
+                              </span>
+                              <span className="text-[9px] text-text-muted font-mono">{timestamp}</span>
+                            </div>
+                            <div className={`text-[10px] font-bold uppercase leading-tight transition-colors ${
+                              showRawData === idx ? 'text-[#10b981]' : 'text-primary group-hover:text-[#10b981]'
                             }`}>
-                              {log.type === 'VAULT_GENESIS' ? 'SYS' : 'EVM'}
-                            </span>
-                            <span className="text-[9px] text-text-muted font-mono">
-                              {new Date(log.timestamp).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}
-                            </span>
+                              {eventName.startsWith('Contract_') ? eventName : `Contract_Emission: ${eventName.replace('Emission', '')}`}
+                            </div>
                           </div>
-                          <div className={`text-[10px] font-bold uppercase leading-tight transition-colors ${
-                            showRawData === idx ? 'text-[#10b981]' : 'text-primary group-hover:text-[#10b981]'
-                          }`}>
-                            {log.type === 'VAULT_GENESIS' ? 'Contract_Genesis' : `Contract_Emission: ${log.type?.split('_').pop()}`}
-                          </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
 

@@ -86,13 +86,14 @@ const VendorDashboard = () => {
     try {
       const response = await createEscrow(user.phone, parseFloat(amount), itemName, imageUrl);
       if (response?.id) {
-        // Success! Close modal and refresh table
+        // Zero-Click Success: Close immediately and clear
         setShowCreateModal(false);
         setItemName('');
         setAmount('');
         setImageUrl('');
-        alert(`Link Created: ${itemName}`);
+        // Optional: you could add a non-blocking toast here later
       }
+      // Refresh the table to show the new link
       await fetchData(user.phone);
     } catch (error: any) {
       console.error('Failed to create escrow:', error);

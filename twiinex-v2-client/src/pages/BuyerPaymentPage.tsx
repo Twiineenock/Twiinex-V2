@@ -305,6 +305,55 @@ const BuyerPaymentPage = () => {
         </div>
       </div>
 
+      {/* Consensus Audit Report Section */}
+      <div className="mt-16 max-w-4xl mx-auto">
+        <div className="bg-[#0a0a0a] rounded-t-xl border-x border-t border-white/10 p-8 shadow-2xl">
+          <div className="flex items-center gap-4 mb-8">
+            <div className="bg-[#10b981]/10 p-3 rounded-lg border border-[#10b981]/20">
+              <Shield className="w-6 h-6 text-[#10b981]" />
+            </div>
+            <div>
+              <h2 className="text-xl font-black uppercase tracking-tighter text-white">Consensus Audit Report</h2>
+              <p className="text-[10px] text-text-muted font-bold uppercase tracking-widest">Hedera Network Immutable Log</p>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            {(transaction.metadata?.history || []).map((log: any, idx: number) => (
+              <div key={idx} className="bg-[#151515] rounded-lg border border-white/5 p-5 hover:border-[#10b981]/30 transition-all group">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-1.5 h-1.5 rounded-full bg-[#10b981] shadow-[0_0_8px_#10b981]" />
+                    <span className="text-[9px] font-black text-[#10b981] uppercase tracking-widest">
+                      Event: {log.type?.replace('VAULT_', '').replace('PAYMENT_', '')}
+                    </span>
+                  </div>
+                  <span className="text-[9px] font-mono text-text-muted uppercase">Block: {log.type === 'VAULT_GENESIS' ? 'Genesis' : 'Live'}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="text-[11px] text-text-muted">
+                    Proof: <span className="text-white font-medium">Hiero Consensus Message #{idx + 1}</span>
+                  </div>
+                  <a 
+                    href={log.proof_url || '#'} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-[10px] font-bold text-[#10b981] hover:underline opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    Verify Transaction ↗
+                  </a>
+                </div>
+              </div>
+            ))}
+            {(!transaction.metadata?.history || transaction.metadata.history.length === 0) && (
+              <div className="text-center py-12 border-2 border-dashed border-white/5 rounded-xl">
+                <p className="text-[11px] text-text-muted uppercase tracking-widest font-bold">Awaiting Network Consensus...</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
       {/* Hiero SDK Network Console Widget */}
       <div className="mt-16 -mx-6 relative z-10">
         <div className="bg-[#050505] border-t border-[#10b981]/30 shadow-2xl overflow-hidden">

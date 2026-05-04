@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Sun, Moon, LogOut } from 'lucide-react';
-import logoWhite from '../assets/Twiinex-white.png';
-import logoBlack from '../assets/Twiinex-black.png';
+import TwiinexLogo from './TwiinexLogo';
 
 
 const Header = () => {
@@ -36,14 +35,14 @@ const Header = () => {
     setUser(null);
     window.location.href = '/';
   };
-  const currentLogo = theme === 'dark' ? logoWhite : logoBlack;
+
 
 
   return (
     <header className="h-[80px] border-b border-border-color bg-primary-bg sticky top-0 z-50 flex items-center justify-between px-6 shadow-sm">
       <div className="flex items-center gap-8">
         <Link to="/" className="flex items-center hover:opacity-80 transition-opacity">
-          <img src={currentLogo} alt="Twiinex" className="h-12 md:h-16 w-auto object-contain" />
+          <TwiinexLogo theme={theme as 'dark' | 'light'} className="h-10 md:h-12 w-auto" />
         </Link>
         
         <nav className="hidden md:flex items-center gap-6 text-sm font-medium">

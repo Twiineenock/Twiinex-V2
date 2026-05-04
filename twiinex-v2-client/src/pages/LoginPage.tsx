@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Shield, Lock, Mail, Phone, User, ArrowRight, AlertCircle, LogIn, UserPlus } from 'lucide-react';
+import { Lock, Mail, Phone, User, ArrowRight, AlertCircle, LogIn, UserPlus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { signup, signin } from '../api/escrow';
+import TwiinexLogo from '../components/TwiinexLogo';
 
 const LoginPage = () => {
   const [mode, setMode] = useState<'login' | 'register'>('login');
@@ -43,8 +44,8 @@ const LoginPage = () => {
     <div className="max-w-md mx-auto px-6 py-20 min-h-[80vh] flex flex-col justify-center">
       <div className="section-card shadow-lg">
         <div className="text-center mb-8">
-          <div className="bg-brand w-12 h-12 rounded flex items-center justify-center mx-auto mb-4">
-            <Shield className="text-white w-6 h-6" />
+          <div className="mx-auto mb-6 flex justify-center">
+            <TwiinexLogo theme="light" className="h-12 w-auto" />
           </div>
           <h2 className="text-2xl font-bold tracking-tight">
             {mode === 'login' ? 'Vendor Sign In' : 'Vendor Registration'}

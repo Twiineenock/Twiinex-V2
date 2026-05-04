@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Shield, Lock, Mail, Phone, User, ArrowRight, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Lock, Mail, Phone, User, ArrowRight, CheckCircle2, AlertCircle } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { signup, signin } from '../api/escrow';
+import TwiinexLogo from '../components/TwiinexLogo';
 
 const AuthPage = () => {
   const [mode, setMode] = useState<'login' | 'register'>('login');
@@ -53,8 +54,8 @@ const AuthPage = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <div className="w-16 h-16 bg-brand rounded-2xl flex items-center justify-center mb-8 shadow-[0_0_40px_rgba(16,185,129,0.3)]">
-              <Shield className="text-white w-8 h-8" />
+            <div className="mb-8">
+              <TwiinexLogo theme="dark" className="h-16 w-auto" />
             </div>
             <h1 className="text-6xl font-black text-white tracking-tighter mb-6 leading-none">
               SECURE YOUR <span className="text-brand">FUTURE</span> TRANSACTIONS.

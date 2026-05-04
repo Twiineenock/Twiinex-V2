@@ -399,13 +399,22 @@ const BuyerPaymentPage = () => {
                     
                     <div className="space-y-4">
                       {/* Synthetic API Start */}
-                      <div className="group relative pl-4 border-l border-[#10b981]/20">
-                        <div className="absolute left-[-4.5px] top-0 w-2 h-2 rounded-full bg-[#10b981]/40" />
+                      <div 
+                        onClick={() => setShowRawData(-1)}
+                        className={`group relative pl-4 border-l cursor-pointer transition-all ${
+                          showRawData === -1 ? 'border-[#10b981]' : 'border-[#10b981]/20 hover:border-white/30'
+                        }`}
+                      >
+                        <div className={`absolute left-[-4.5px] top-0 w-2 h-2 rounded-full ${
+                          showRawData === -1 ? 'bg-[#10b981] shadow-[0_0_8px_#10b981]' : 'bg-[#10b981]/40'
+                        }`} />
                         <div className="flex items-center gap-2 mb-1">
                           <span className="px-1.5 py-0.5 rounded-[2px] bg-[#10b981]/10 text-[#10b981] text-[8px] font-bold uppercase tracking-tighter">API</span>
                           <span className="text-[9px] text-text-muted font-mono">{new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
                         </div>
-                        <div className="text-[10px] font-bold text-white uppercase leading-tight group-hover:text-[#10b981] transition-colors cursor-pointer">
+                        <div className={`text-[10px] font-bold uppercase leading-tight transition-colors ${
+                          showRawData === -1 ? 'text-[#10b981]' : 'text-white group-hover:text-[#10b981]'
+                        }`}>
                           GET_TRANSACTION
                         </div>
                       </div>
@@ -446,7 +455,9 @@ const BuyerPaymentPage = () => {
                     <div className="flex items-center justify-between px-6 py-3 border-b border-white/5 bg-[#0a0a0a]/50">
                       <div className="flex items-center gap-2">
                         <div className="w-1 h-3 bg-[#10b981] rounded-full" />
-                        <span className="text-[10px] font-mono text-text-muted uppercase tracking-widest">EVM_RESPONSE.JSON</span>
+                        <span className="text-[10px] font-mono text-text-muted uppercase tracking-widest">
+                          {showRawData === -1 ? 'API_RESPONSE.JSON' : 'EVM_RESPONSE.JSON'}
+                        </span>
                       </div>
                       <button 
                         onClick={handleCopyJSON}
@@ -460,7 +471,7 @@ const BuyerPaymentPage = () => {
                     <div className="p-8 flex-grow overflow-auto bg-[#030303] scrollbar-thin scrollbar-thumb-white/10">
                       <pre className="text-[#10b981] font-mono text-[13px] leading-relaxed selection:bg-[#10b981]/30">
                         {JSON.stringify(
-                          transaction.metadata?.history?.[showRawData as number] || { message: "Ready for Hiero SDK Emission..." }, 
+                          showRawData === -1 ? transaction : (transaction.metadata?.history?.[showRawData as number] || { message: "Ready for Hiero SDK Emission..." }), 
                           null, 
                           2
                         )}

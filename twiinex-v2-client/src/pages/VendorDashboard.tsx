@@ -167,7 +167,7 @@ const VendorDashboard = () => {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-tertiary/50">
+                <tr className="bg-tertiary-bg/50">
                   <th className="px-6 py-3 label-text border-b border-border-color">Details</th>
                   <th className="px-6 py-3 label-text border-b border-border-color">ID</th>
                   <th className="px-6 py-3 label-text border-b border-border-color">Amount</th>
@@ -187,7 +187,7 @@ const VendorDashboard = () => {
                         link.status === 'COMPLETED' ? 'bg-success/10 text-success' :
                         link.status === 'FUNDED' ? 'bg-brand/10 text-brand' : 
                         link.status === 'SHIPPED' ? 'bg-blue-500/10 text-blue-500' :
-                        'bg-tertiary text-text-muted'
+                        'bg-tertiary-bg text-text-muted'
                       }`}>
                         {link.status}
                       </span>

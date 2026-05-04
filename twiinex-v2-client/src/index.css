@@ -34,6 +34,7 @@
   --color-danger: var(--danger-color);
   --color-primary-bg: var(--bg-primary);
   --color-secondary-bg: var(--bg-secondary);
+  --color-tertiary-bg: var(--bg-tertiary);
   --color-border-main: var(--border-color);
 }
 
@@ -69,8 +70,11 @@
 
 @utility btn-outline {
   border: 1px solid var(--border-color);
-  @apply btn-base bg-transparent hover:bg-tertiary;
+  @apply btn-base bg-transparent;
   color: var(--text-primary);
+  &:hover {
+    background-color: var(--bg-tertiary);
+  }
 }
 
 @utility data-row {

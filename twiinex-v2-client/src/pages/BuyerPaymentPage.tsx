@@ -135,7 +135,7 @@ const BuyerPaymentPage = () => {
 
         {/* Progress Bar - Tidy Style */}
         <div className="relative flex justify-between mb-10">
-          <div className="absolute top-4 left-0 right-0 h-0.5 bg-tertiary -z-10" />
+          <div className="absolute top-4 left-0 right-0 h-0.5 bg-tertiary-bg -z-10" />
           {[
             { step: 1, label: 'Pay', icon: CreditCard },
             { step: 2, label: 'Hold', icon: Lock },

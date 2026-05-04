@@ -11,7 +11,7 @@ declare global {
 }
 
 const LoadingOverlay = ({ message }: { message: string }) => (
-  <div className="fixed inset-0 bg-primary/80 flex flex-col items-center justify-center z-[100] backdrop-blur-sm">
+  <div className="fixed inset-0 bg-primary-bg/80 flex flex-col items-center justify-center z-[100] backdrop-blur-sm">
     <div className="w-10 h-10 border-4 border-brand border-t-transparent rounded-full animate-spin mb-4" />
     <p className="text-primary font-bold text-sm">{message}</p>
   </div>
@@ -92,7 +92,7 @@ const BuyerPaymentPage = () => {
   };
 
   if (loading) return (
-    <div className="min-h-screen flex items-center justify-center bg-primary">
+    <div className="min-h-screen flex items-center justify-center bg-primary-bg">
       <div className="w-8 h-8 border-4 border-brand border-t-transparent rounded-full animate-spin" />
     </div>
   );
@@ -106,7 +106,7 @@ const BuyerPaymentPage = () => {
   );
 
   return (
-    <div className="max-w-2xl mx-auto px-6 py-12 bg-primary">
+    <div className="max-w-2xl mx-auto px-6 py-12 bg-primary-bg">
       {verifying && <LoadingOverlay message="Updating Blockchain Record..." />}
 
       <Link to="/" className="inline-flex items-center gap-2 text-text-muted hover:text-brand mb-8 transition-colors">
@@ -144,7 +144,7 @@ const BuyerPaymentPage = () => {
           ].map((s) => (
             <div key={s.step} className="flex flex-col items-center gap-2">
               <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 transition-colors ${
-                step >= s.step ? 'bg-brand border-brand text-white' : 'bg-primary border-tertiary text-text-muted'
+                step >= s.step ? 'bg-brand border-brand text-white' : 'bg-primary-bg border-tertiary text-text-muted'
               }`}>
                 <s.icon className="w-4 h-4" />
               </div>
@@ -156,7 +156,7 @@ const BuyerPaymentPage = () => {
         </div>
 
         {/* Main Content Card */}
-        <div className="bg-secondary border border-border-color rounded-lg overflow-hidden">
+        <div className="bg-secondary-bg border border-border-color rounded-lg overflow-hidden">
           {transaction.metadata?.imageUrl && (
             <img src={transaction.metadata.imageUrl} className="w-full h-48 object-cover border-b border-border-color" alt="Product" />
           )}
@@ -263,7 +263,7 @@ const BuyerPaymentPage = () => {
               exit={{ height: 0, opacity: 0 }}
               className="overflow-hidden"
             >
-              <div className="bg-secondary border border-border-color rounded p-4 space-y-4">
+              <div className="bg-secondary-bg border border-border-color rounded p-4 space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <span className="label-text block mb-1">Network</span>

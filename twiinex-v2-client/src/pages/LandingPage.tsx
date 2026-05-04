@@ -29,7 +29,7 @@ const LandingPage = () => {
           <input
             type="text"
             placeholder="Enter Trust Link ID (e.g. TX-123456789)"
-            className="w-full bg-secondary border border-border-color rounded-lg px-5 py-4 pl-12 focus:outline-none focus:border-brand shadow-sm transition-all"
+            className="w-full bg-secondary-bg border border-border-color rounded-lg px-5 py-4 pl-12 focus:outline-none focus:border-brand shadow-sm transition-all"
             value={searchId}
             onChange={(e) => setSearchId(e.target.value)}
           />

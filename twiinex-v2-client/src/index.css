@@ -32,14 +32,20 @@
   --color-brand: var(--accent-color);
   --color-success: var(--success-color);
   --color-danger: var(--danger-color);
+  --color-primary-bg: var(--bg-primary);
+  --color-secondary-bg: var(--bg-secondary);
+  --color-border-main: var(--border-color);
 }
 
 @layer base {
   body {
-    @apply bg-primary text-primary transition-colors duration-200;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    transition-property: color, background-color;
+    transition-duration: 200ms;
     margin: 0;
     min-height: 100vh;
-    font-size: 14px; /* Tidier base font */
+    font-size: 14px;
   }
 
   h1 { @apply text-2xl font-bold tracking-tight; }
@@ -48,7 +54,9 @@
 }
 
 @utility section-card {
-  @apply bg-secondary border border-border-color rounded-lg p-4 shadow-sm;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  @apply rounded-lg p-4 shadow-sm;
 }
 
 @utility btn-base {
@@ -60,15 +68,19 @@
 }
 
 @utility btn-outline {
-  @apply btn-base border border-border-color bg-transparent hover:bg-tertiary text-primary;
+  border: 1px solid var(--border-color);
+  @apply btn-base bg-transparent hover:bg-tertiary;
+  color: var(--text-primary);
 }
 
 @utility data-row {
-  @apply flex items-center justify-between py-3 border-b border-border-color last:border-0;
+  border-bottom: 1px solid var(--border-color);
+  @apply flex items-center justify-between py-3 last:border-0;
 }
 
 @utility label-text {
-  @apply text-xs font-semibold uppercase tracking-wider text-muted;
+  color: var(--text-muted);
+  @apply text-xs font-semibold uppercase tracking-wider;
 }
 
 @utility value-text {

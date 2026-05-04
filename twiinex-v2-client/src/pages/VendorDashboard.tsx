@@ -101,7 +101,7 @@ const VendorDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-primary">
+    <div className="min-h-screen bg-primary-bg">
       <div className="max-w-7xl mx-auto px-6 py-8">
         {/* Header Section */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-10">
@@ -156,7 +156,7 @@ const VendorDashboard = () => {
 
         {/* Transactions Table - Clean Explorer Style */}
         <div className="section-card p-0 overflow-hidden">
-          <div className="px-6 py-4 border-b border-border-color bg-secondary flex justify-between items-center">
+          <div className="px-6 py-4 border-b border-border-color bg-secondary-bg flex justify-between items-center">
             <h3 className="text-sm font-bold uppercase tracking-wider">Recent Transactions</h3>
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-success" />
@@ -178,7 +178,7 @@ const VendorDashboard = () => {
               </thead>
               <tbody className="divide-y divide-border-color">
                 {links.map((link, i) => (
-                  <tr key={i} className="hover:bg-secondary/50 transition-colors group">
+                  <tr key={i} className="hover:bg-secondary-bg/50 transition-colors group">
                     <td className="px-6 py-4 font-semibold">{link.item}</td>
                     <td className="px-6 py-4"><span className="value-text text-text-muted">{link.id}</span></td>
                     <td className="px-6 py-4 font-mono font-bold text-brand">UGX {link.amount}</td>
@@ -231,7 +231,7 @@ const VendorDashboard = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 20 }}
-              className="bg-primary border border-border-color rounded-lg w-full max-w-md shadow-2xl overflow-hidden"
+              className="bg-primary-bg border border-border-color rounded-lg w-full max-w-md shadow-2xl overflow-hidden"
             >
                {!createdLinkId ? (
                   <div className="p-6">
@@ -248,7 +248,7 @@ const VendorDashboard = () => {
                               value={itemName}
                               onChange={(e) => setItemName(e.target.value)}
                               placeholder="e.g. JBL Speaker XL"
-                              className="w-full bg-secondary border border-border-color rounded px-4 py-2.5 focus:border-brand focus:outline-none"
+                              className="w-full bg-secondary-bg border border-border-color rounded px-4 py-2.5 focus:border-brand focus:outline-none"
                            />
                         </div>
                         <div>
@@ -258,7 +258,7 @@ const VendorDashboard = () => {
                               value={amount}
                               onChange={(e) => setAmount(e.target.value)}
                               placeholder="0"
-                              className="w-full bg-secondary border border-border-color rounded px-4 py-2.5 focus:border-brand focus:outline-none font-mono"
+                              className="w-full bg-secondary-bg border border-border-color rounded px-4 py-2.5 focus:border-brand focus:outline-none font-mono"
                            />
                         </div>
                         <div>
@@ -267,12 +267,12 @@ const VendorDashboard = () => {
                               <div className="flex gap-2">
                                 <button 
                                   onClick={startCamera}
-                                  className="flex-1 flex flex-col items-center justify-center gap-2 py-6 border border-dashed border-border-color rounded hover:bg-secondary transition-colors group"
+                                  className="flex-1 flex flex-col items-center justify-center gap-2 py-6 border border-dashed border-border-color rounded hover:bg-secondary-bg transition-colors group"
                                 >
                                   <Camera className="w-6 h-6 text-text-muted group-hover:text-brand" />
                                   <span className="text-[10px] font-bold uppercase">Take Photo</span>
                                 </button>
-                                <label className="flex-1 flex flex-col items-center justify-center gap-2 py-6 border border-dashed border-border-color rounded cursor-pointer hover:bg-secondary transition-colors group">
+                                <label className="flex-1 flex flex-col items-center justify-center gap-2 py-6 border border-dashed border-border-color rounded cursor-pointer hover:bg-secondary-bg transition-colors group">
                                   <ImageIcon className="w-6 h-6 text-text-muted group-hover:text-brand" />
                                   <span className="text-[10px] font-bold uppercase">Upload File</span>
                                   <input type="file" className="hidden" accept="image/*" onChange={(e) => {
@@ -323,7 +323,7 @@ const VendorDashboard = () => {
                      <p className="text-text-secondary text-sm mb-6">Secured on Hedera HCS. Ready for payment.</p>
 
                      <div className="space-y-3">
-                        <div className="p-3 bg-secondary border border-border-color rounded flex items-center justify-between">
+                        <div className="p-3 bg-secondary-bg border border-border-color rounded flex items-center justify-between">
                            <span className="text-[10px] font-mono text-text-muted truncate">
                               {window.location.origin.replace('http://', '').replace('https://', '')}/pay/{createdLinkId}
                            </span>

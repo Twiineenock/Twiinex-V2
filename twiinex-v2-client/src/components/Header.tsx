@@ -15,7 +15,7 @@ const Header = () => {
   };
 
   return (
-    <header className="h-[64px] border-b border-border-color bg-primary sticky top-0 z-50 flex items-center justify-between px-6 shadow-sm">
+    <header className="h-[64px] border-b border-border-color bg-primary-bg sticky top-0 z-50 flex items-center justify-between px-6 shadow-sm">
       <div className="flex items-center gap-8">
         <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
           <div className="bg-brand p-1.5 rounded">

@@ -73,7 +73,7 @@ const LoginPage = () => {
                     required
                     value={formData.name}
                     onChange={(e) => setFormData({...formData, name: e.target.value})}
-                    className="w-full bg-secondary border border-border-color rounded py-2.5 pl-10 pr-4 focus:border-brand focus:outline-none text-sm"
+                    className="w-full bg-secondary-bg border border-border-color rounded py-2.5 pl-10 pr-4 focus:border-brand focus:outline-none text-sm"
                     placeholder="Enter name"
                   />
                 </div>
@@ -87,7 +87,7 @@ const LoginPage = () => {
                     required
                     value={formData.phone}
                     onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                    className="w-full bg-secondary border border-border-color rounded py-2.5 pl-10 pr-4 focus:border-brand focus:outline-none text-sm"
+                    className="w-full bg-secondary-bg border border-border-color rounded py-2.5 pl-10 pr-4 focus:border-brand focus:outline-none text-sm"
                     placeholder="e.g. 0770000000"
                   />
                 </div>

@@ -8,7 +8,7 @@ import LoginPage from './pages/LoginPage';
 function App() {
   return (
     <Router>
-      <div className="min-height-screen bg-primary flex flex-col">
+      <div className="min-height-screen bg-primary-bg flex flex-col">
         <Header />
         <main className="flex-1">
           <Routes>

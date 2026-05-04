@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Shield, Lock, CreditCard, ChevronRight, CheckCircle2, MessageSquare, Truck, Info, ExternalLink, ArrowLeft } from 'lucide-react';
+import { Shield, Lock, CreditCard, CheckCircle2, MessageSquare, Truck, Info, ExternalLink, ArrowLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getTransaction, verifyTransaction, updateTransactionStatus, updateTransactionMetadata } from '../api/escrow';
 
@@ -44,7 +44,7 @@ const BuyerPaymentPage = () => {
   const [loading, setLoading] = useState(true);
   const [verifying, setVerifying] = useState(false);
   const [showAudit, setShowAudit] = useState(false);
-  const [showRawData, setShowRawData] = useState(false);
+  const [showRawData, setShowRawData] = useState<number | null>(0);
   
   const fetchTx = async () => {
     if (!id) return;

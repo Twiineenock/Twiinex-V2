@@ -36,6 +36,9 @@
   --color-secondary-bg: var(--bg-secondary);
   --color-tertiary-bg: var(--bg-tertiary);
   --color-border-main: var(--border-color);
+  --color-text-main: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
 }
 
 @layer base {

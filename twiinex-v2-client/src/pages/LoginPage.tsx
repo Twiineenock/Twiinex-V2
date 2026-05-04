@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Lock, Mail, Phone, User, ArrowRight, AlertCircle, LogIn, UserPlus } from 'lucide-react';
+import { Lock, Mail, Phone, User, ArrowRight, AlertCircle, LogIn, UserPlus, Eye, EyeOff } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { signup, signin } from '../api/escrow';
 import TwiinexLogo from '../components/TwiinexLogo';
@@ -7,12 +7,14 @@ import TwiinexLogo from '../components/TwiinexLogo';
 const LoginPage = () => {
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     email: '',
     password: '',
+    confirmPassword: '',
     name: '',
     phone: ''
   });
@@ -21,6 +23,12 @@ const LoginPage = () => {
     e.preventDefault();
     setLoading(true);
     setError('');
+
+    if (mode === 'register' && formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match');
+      setLoading(false);
+      return;
+    }
 
     try {
       const result = mode === 'login' 
@@ -116,15 +124,39 @@ const LoginPage = () => {
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
               <input 
-                type="password"
+                type={showPassword ? "text" : "password"}
                 required
                 value={formData.password}
                 onChange={(e) => setFormData({...formData, password: e.target.value})}
-                className="w-full bg-secondary-bg border border-border-color rounded py-2.5 pl-10 pr-4 focus:border-brand focus:outline-none text-sm"
+                className="w-full bg-secondary-bg border border-border-color rounded py-2.5 pl-10 pr-10 focus:border-brand focus:outline-none text-sm"
                 placeholder="••••••••"
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-brand transition-colors"
+              >
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
             </div>
           </div>
+
+          {mode === 'register' && (
+            <div>
+              <label className="label-text mb-1.5 block">Confirm Password</label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                <input 
+                  type={showPassword ? "text" : "password"}
+                  required
+                  value={formData.confirmPassword}
+                  onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
+                  className="w-full bg-secondary-bg border border-border-color rounded py-2.5 pl-10 pr-10 focus:border-brand focus:outline-none text-sm"
+                  placeholder="••••••••"
+                />
+              </div>
+            </div>
+          )}
 
           <button 
             type="submit" 

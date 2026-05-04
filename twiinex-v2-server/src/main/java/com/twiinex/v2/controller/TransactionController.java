@@ -13,8 +13,10 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping("/api/transactions")
@@ -47,11 +49,11 @@ public class TransactionController {
         // 2. Genesis Audit Event
         Map<String, Object> metadata = new HashMap<>();
         metadata.put("imageUrl", imageUrl);
-        metadata.put("contractId", contractId);
+        metadata.put("contractId", null);
         List<Map<String, Object>> history = new ArrayList<>();
         
         Map<String, Object> genesisLog = new HashMap<>();
-        genesisLog.put("contract_id", contractId);
+        genesisLog.put("contract_id", null);
         genesisLog.put("event_type", "EscrowCreated");
         Map<String, Object> terms = new HashMap<>();
         terms.put("price", amount);
@@ -119,46 +121,76 @@ public class TransactionController {
 
         long amount = ((Number) tx.get("amount")).longValue();
 
+        String hcsMessage = String.format("{\"action\":\"STATUS_UPDATE\",\"id\":\"%s\",\"status\":\"%s\",\"timestamp\":\"%s\"}", id, status, new Date().toString());
+        
+        // Start HCS logging in parallel as it doesn't block on-chain logic
+        CompletableFuture<Map<String, Object>> hcsFuture = CompletableFuture.supplyAsync(() -> hederaService.submitHCSEvent(hcsMessage));
+
         if ("FUNDED".equals(status)) {
-            Map<String, Object> contractResult = hederaService.executeContractFunction("createOrder", id);
+            // Run Contract Call and HTS Mint in parallel
+            CompletableFuture<Map<String, Object>> contractFuture = CompletableFuture.supplyAsync(() -> hederaService.executeContractFunction("createOrder", id));
+            CompletableFuture<Map<String, Object>> mintFuture = CompletableFuture.supplyAsync(() -> hederaService.mintVaultTokens(amount, id));
+
+            CompletableFuture.allOf(contractFuture, mintFuture, hcsFuture).join();
+            
+            Map<String, Object> contractResult = contractFuture.join();
+            Map<String, Object> mintResult = mintFuture.join();
+
             if ((Boolean) contractResult.getOrDefault("success", false)) {
-                String txId_onchain = (String) contractResult.get("transactionId");
-                metadata.put("lastTxId", txId_onchain);
-                eventLog.put("contractResult", contractResult);
-                eventLog.put("proof_url", "https://hashscan.io/testnet/transaction/" + txId_onchain.replace("@", "-").replaceFirst("\\.", "-"));
+                String normalized = txId_onchain.replace("@", "-").replace(".", "-");
+                String[] parts = normalized.split("-");
+                String formattedTxId = txId_onchain; // fallback
+                if (parts.length >= 5) {
+                    formattedTxId = parts[0] + "." + parts[1] + "." + parts[2] + "-" + parts[3] + "-" + parts[4];
+                }
+                eventLog.put("proof_url", "https://hashscan.io/testnet/transaction/" + formattedTxId);
             }
-            Map<String, Object> mintResult = hederaService.mintVaultTokens(amount, id);
             eventLog.put("amount_ugx", amount);
             eventLog.put("hedera_vault", metadata.get("contractId"));
-            eventLog.put("minted_tokens", String.valueOf(amount / 100)); // Sample logic for token decimals
+            eventLog.put("minted_tokens", String.valueOf(amount / 100)); 
             eventLog.put("hts_mint_result", mintResult);
             
         } else if ("SHIPPED".equals(status)) {
-            Map<String, Object> contractResult = hederaService.executeContractFunction("markShipped", id);
+            CompletableFuture<Map<String, Object>> contractFuture = CompletableFuture.supplyAsync(() -> hederaService.executeContractFunction("markShipped", id));
+            CompletableFuture.allOf(contractFuture, hcsFuture).join();
+            
+            Map<String, Object> contractResult = contractFuture.join();
             if ((Boolean) contractResult.getOrDefault("success", false)) {
-                String txId_onchain = (String) contractResult.get("transactionId");
-                metadata.put("lastTxId", txId_onchain);
-                eventLog.put("contractResult", contractResult);
-                eventLog.put("proof_url", "https://hashscan.io/testnet/transaction/" + txId_onchain.replace("@", "-").replaceFirst("\\.", "-"));
+                String normalized = txId_onchain.replace("@", "-").replace(".", "-");
+                String[] parts = normalized.split("-");
+                String formattedTxId = txId_onchain; // fallback
+                if (parts.length >= 5) {
+                    formattedTxId = parts[0] + "." + parts[1] + "." + parts[2] + "-" + parts[3] + "-" + parts[4];
+                }
+                eventLog.put("proof_url", "https://hashscan.io/testnet/transaction/" + formattedTxId);
             }
             eventLog.put("shipping_id", "SHIP-" + id.split("-")[1]);
             
         } else if ("COMPLETED".equals(status)) {
-            Map<String, Object> contractResult = hederaService.executeContractFunction("confirmReceipt", id);
+            CompletableFuture<Map<String, Object>> contractFuture = CompletableFuture.supplyAsync(() -> hederaService.executeContractFunction("confirmReceipt", id));
+            CompletableFuture<Map<String, Object>> burnFuture = CompletableFuture.supplyAsync(() -> hederaService.burnVaultTokens(amount));
+            
+            CompletableFuture.allOf(contractFuture, burnFuture, hcsFuture).join();
+            
+            Map<String, Object> contractResult = contractFuture.join();
+            Map<String, Object> burnResult = burnFuture.join();
+
             if ((Boolean) contractResult.getOrDefault("success", false)) {
-                String txId_onchain = (String) contractResult.get("transactionId");
-                metadata.put("lastTxId", txId_onchain);
-                eventLog.put("contractResult", contractResult);
-                eventLog.put("proof_url", "https://hashscan.io/testnet/transaction/" + txId_onchain.replace("@", "-").replaceFirst("\\.", "-"));
+                String normalized = txId_onchain.replace("@", "-").replace(".", "-");
+                String[] parts = normalized.split("-");
+                String formattedTxId = txId_onchain; // fallback
+                if (parts.length >= 5) {
+                    formattedTxId = parts[0] + "." + parts[1] + "." + parts[2] + "-" + parts[3] + "-" + parts[4];
+                }
+                eventLog.put("proof_url", "https://hashscan.io/testnet/transaction/" + formattedTxId);
             }
-            Map<String, Object> burnResult = hederaService.burnVaultTokens(amount);
             eventLog.put("burn_confirmation", "HTS_BURN_SUCCESS");
             eventLog.put("recipient", "Vendor Wallet");
+        } else {
+            hcsFuture.join();
         }
 
-        String message = String.format("{\"action\":\"STATUS_UPDATE\",\"id\":\"%s\",\"status\":\"%s\",\"timestamp\":\"%s\"}", id, status, new Date().toString());
-        Map<String, Object> hcsResult = hederaService.submitHCSEvent(message);
-
+        Map<String, Object> hcsResult = hcsFuture.join();
         if ((Boolean) hcsResult.getOrDefault("success", false)) {
             metadata.put("hcsTopicId", hcsResult.get("topicId"));
             metadata.put("hcsSequenceNumber", hcsResult.get("sequenceNumber"));
@@ -223,15 +255,21 @@ public class TransactionController {
                 Map<String, Object> tx = supabaseService.getTransactionById(id);
                 long amount = ((Number) tx.get("amount")).longValue();
 
-                // Mint HTS Tokens
-                Map<String, Object> htsResult = hederaService.mintVaultTokens(amount, id);
+                // Mint HTS Tokens and Log HCS Event in parallel to save time
+                String hcsMessage = String.format("{\"action\":\"PAYMENT_VERIFIED\",\"id\":\"%s\",\"flw_ref\":\"%s\",\"amount\":%d,\"timestamp\":\"%s\"}", id, transactionId, amount, new Date().toString());
+                
+                CompletableFuture<Map<String, Object>> htsFuture = CompletableFuture.supplyAsync(() -> hederaService.mintVaultTokens(amount, id));
+                CompletableFuture<Map<String, Object>> hcsFuture = CompletableFuture.supplyAsync(() -> hederaService.submitHCSEvent(hcsMessage));
+
+                // Wait for both to complete (Max speed: roughly the time of the slowest one)
+                CompletableFuture.allOf(htsFuture, hcsFuture).join();
+                
+                Map<String, Object> htsResult = htsFuture.get();
+                Map<String, Object> hcsResult = hcsFuture.get();
+
                 if (!(Boolean) htsResult.getOrDefault("success", false)) {
                     return ResponseEntity.internalServerError().body(Map.of("error", "Hedera HTS Minting Failed", "details", htsResult.get("error")));
                 }
-
-                // Log HCS Event
-                String message = String.format("{\"action\":\"PAYMENT_VERIFIED\",\"id\":\"%s\",\"flw_ref\":\"%s\",\"amount\":%d,\"timestamp\":\"%s\"}", id, transactionId, amount, new Date().toString());
-                Map<String, Object> hcsResult = hederaService.submitHCSEvent(message);
 
                 // Update Metadata & History
                 Map<String, Object> metadata = (Map<String, Object>) tx.get("metadata");

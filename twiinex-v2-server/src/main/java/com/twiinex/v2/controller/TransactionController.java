@@ -44,22 +44,35 @@ public class TransactionController {
         Map<String, Object> transaction = supabaseService.createTransaction(vendorPhone, amount, description, null, imageUrl);
         String txId = (String) transaction.get("id");
 
-        // 2. Log to HCS
-        String message = String.format("{\"action\":\"TRANSACTION_CREATED\",\"id\":\"%s\",\"amount\":%d,\"seller\":\"%s\",\"timestamp\":\"%s\"}", txId, amount, vendorPhone, new Date().toString());
+        // 2. Genesis Audit Event
+        Map<String, Object> metadata = new HashMap<>();
+        metadata.put("imageUrl", imageUrl);
+        List<Map<String, Object>> history = new ArrayList<>();
+        
+        Map<String, Object> genesisLog = new HashMap<>();
+        genesisLog.put("type", "VAULT_GENESIS");
+        genesisLog.put("status", "PENDING");
+        genesisLog.put("timestamp", new Date().toString());
+        genesisLog.put("description", "Secure Escrow Vault initialized on Hedera.");
+        genesisLog.put("actor", "VENDOR_" + vendorPhone);
+
+        // 3. Log to HCS
+        String message = String.format("{\"action\":\"GENESIS\",\"id\":\"%s\",\"amount\":%d,\"seller\":\"%s\",\"timestamp\":\"%s\"}", txId, amount, vendorPhone, new Date().toString());
         Map<String, Object> hcsResult = hederaService.submitHCSEvent(message);
 
         if ((Boolean) hcsResult.getOrDefault("success", false)) {
-            // MERGE: Keep existing metadata (like imageUrl) and add HCS data
-            Map<String, Object> metadata = (Map<String, Object>) transaction.get("metadata");
-            if (metadata == null) metadata = new HashMap<>();
-            
             metadata.put("hcsTopicId", hcsResult.get("topicId"));
             metadata.put("hcsSequenceNumber", hcsResult.get("sequenceNumber"));
-            
-            // Save the merged metadata back to Supabase
-            supabaseService.updateStatus(txId, "PENDING", metadata);
-            transaction.put("metadata", metadata);
+            genesisLog.put("hcsResult", hcsResult);
+            genesisLog.put("topicId", hcsResult.get("topicId"));
         }
+
+        history.add(genesisLog);
+        metadata.put("history", history);
+        
+        // 4. Update with Metadata
+        supabaseService.updateStatus(txId, "PENDING", metadata);
+        transaction.put("metadata", metadata);
 
         Map<String, Object> response = new HashMap<>();
         response.put("success", true);
@@ -96,6 +109,8 @@ public class TransactionController {
         eventLog.put("status", status);
         eventLog.put("timestamp", new Date().toString());
         eventLog.put("type", "LIFECYCLE_UPDATE");
+        eventLog.put("backend_log", "Processing status transition to " + status + " for link " + id);
+        eventLog.put("actor", "SYSTEM_ESCROW_ENGINE");
 
         long amount = ((Number) tx.get("amount")).longValue();
 
@@ -220,9 +235,12 @@ public class TransactionController {
                 eventLog.put("status", "FUNDED");
                 eventLog.put("timestamp", new Date().toString());
                 eventLog.put("type", "PAYMENT_VERIFICATION");
+                eventLog.put("description", "Payment verified via Flutterwave. Funds locked in Escrow.");
+                eventLog.put("backend_log", "Verifying flw_ref: " + transactionId + " with gateway...");
                 eventLog.put("flw_ref", transactionId);
                 eventLog.put("htsMintResult", htsResult);
                 eventLog.put("hcsResult", hcsResult);
+                eventLog.put("actor", "BUYER_GATEWAY_INTEGRATION");
 
                 if ((Boolean) hcsResult.getOrDefault("success", false)) {
                     metadata.put("hcsTopicId", hcsResult.get("topicId"));

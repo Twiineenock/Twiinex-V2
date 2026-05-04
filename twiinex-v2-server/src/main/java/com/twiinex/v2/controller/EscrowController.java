@@ -29,6 +29,19 @@ public class EscrowController {
         // 1. Deploy Contract to Hedera
         ContractId contractId = escrowService.deployEscrow(phone, amount);
 
+        Map<String, Object> metadata = new HashMap<>();
+        
+        // Genesis Audit Event
+        List<Map<String, Object>> history = new ArrayList<>();
+        Map<String, Object> genesisLog = new HashMap<>();
+        genesisLog.put("type", "VAULT_GENESIS");
+        genesisLog.put("status", "PENDING");
+        genesisLog.put("timestamp", new Date().toString());
+        genesisLog.put("description", "Secure Escrow Vault initialized on Hedera.");
+        
+        history.add(genesisLog);
+        metadata.put("history", history);
+
         // 2. Store in Supabase (with null for imageUrl as it's optional here)
         Map<String, Object> transaction = supabaseService.createTransaction(phone, amount, description, contractId.toString(), null);
 

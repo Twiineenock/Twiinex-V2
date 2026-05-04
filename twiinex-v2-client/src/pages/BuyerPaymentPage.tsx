@@ -335,15 +335,20 @@ const BuyerPaymentPage = () => {
                         >
                           <div className="flex items-center gap-3">
                             <div className={`p-1.5 rounded-full ${showRawData === idx ? 'bg-brand text-white' : 'bg-tertiary-bg text-text-muted'}`}>
-                              <Shield className="w-3 h-3" />
+                              {log.type === 'VAULT_GENESIS' ? <Shield className="w-3 h-3" /> : 
+                               log.type === 'PAYMENT_VERIFICATION' ? <CreditCard className="w-3 h-3" /> :
+                               <Truck className="w-3 h-3" />}
                             </div>
-                            <div>
-                              <div className="text-[10px] font-bold uppercase tracking-wider leading-none mb-1">
+                            <div className="flex-grow">
+                              <div className="text-[9px] font-bold uppercase tracking-wider leading-none mb-1 text-text-muted">
+                                {log.type?.replace('_', ' ') || 'LOG ENTRY'}
+                              </div>
+                              <div className="text-[10px] font-bold text-primary leading-none">
                                 {log.status}
                               </div>
-                              <div className="text-[9px] text-text-muted font-mono leading-none">
-                                {new Date(log.timestamp).toLocaleTimeString()}
-                              </div>
+                            </div>
+                            <div className="text-[8px] text-text-muted font-mono whitespace-nowrap">
+                              {new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                             </div>
                           </div>
                         </button>

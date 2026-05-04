@@ -1,6 +1,6 @@
-import { useState, useEffect, Fragment } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Shield, Lock, CreditCard, ChevronRight, CheckCircle2, MessageSquare, Package, Truck, Info, ExternalLink, ArrowLeft } from 'lucide-react';
+import { Shield, Lock, CreditCard, ChevronRight, CheckCircle2, MessageSquare, Truck, Info, ExternalLink, ArrowLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getTransaction, verifyTransaction, updateTransactionStatus, updateTransactionMetadata } from '../api/escrow';
 

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
-import { Plus, Copy, Clock, ShieldCheck, TrendingUp, DollarSign, CheckCircle2, Send, X, Camera, Image as ImageIcon, MessageSquare, LogOut, ChevronRight, User } from 'lucide-react';
+import { Plus, Copy, Clock, ShieldCheck, DollarSign, CheckCircle2, X, Camera, Image as ImageIcon, MessageSquare, LogOut, ChevronRight, User } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { createEscrow, getTransactions, updateTransactionStatus } from '../api/escrow';
+import { createEscrow, getTransactions } from '../api/escrow';
 
 const VendorDashboard = () => {
   const [itemName, setItemName] = useState('');
@@ -11,7 +11,6 @@ const VendorDashboard = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [links, setLinks] = useState<any[]>([]);
   const [user, setUser] = useState<any>(null);
-  const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [createdLinkId, setCreatedLinkId] = useState<string | null>(null);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);

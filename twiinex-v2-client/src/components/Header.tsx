@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Sun, Moon, ShieldCheck, Github } from 'lucide-react';
+import { Sun, Moon, ShieldCheck, ExternalLink } from 'lucide-react';
 
 const Header = () => {
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'dark');
@@ -28,7 +28,7 @@ const Header = () => {
           <Link to="/" className="text-text-secondary hover:text-brand">Home</Link>
           <Link to="/dashboard" className="text-text-secondary hover:text-brand">Dashboard</Link>
           <a href="https://hashscan.io/testnet" target="_blank" rel="noopener noreferrer" className="text-text-secondary hover:text-brand flex items-center gap-1">
-            Hashscan <Github className="w-3 h-3" />
+            Hashscan <ExternalLink className="w-3 h-3" />
           </a>
         </nav>
       </div>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Shield, Lock, Mail, Phone, User, ArrowRight, AlertCircle, LogIn, UserPlus } from 'lucide-react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { signup, signin } from '../api/escrow';
 
 const LoginPage = () => {

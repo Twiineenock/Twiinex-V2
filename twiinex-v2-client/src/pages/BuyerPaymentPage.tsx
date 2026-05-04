@@ -307,7 +307,7 @@ const BuyerPaymentPage = () => {
 
       {/* Consensus Audit Report Section */}
       <div className="mt-16 max-w-4xl mx-auto">
-        <div className="bg-[#0a0a0a] rounded-t-xl border-x border-t border-white/10 p-8 shadow-2xl">
+        <div className="bg-secondary-bg rounded-t-xl border-x border-t border-border-main p-8 shadow-2xl">
           <div className="flex items-center gap-4 mb-8">
             <div className="bg-[#10b981]/10 p-3 rounded-lg border border-[#10b981]/20">
               <Shield className="w-6 h-6 text-[#10b981]" />
@@ -325,7 +325,7 @@ const BuyerPaymentPage = () => {
               const blockLabel = eventName.includes('CREATED') || eventName.includes('GENESIS') || eventName.includes('PENDING') ? 'Genesis' : 'Live';
               
               return (
-                <div key={idx} className="bg-[#151515] rounded-lg border border-white/5 p-5 hover:border-[#10b981]/30 transition-all group">
+                <div key={idx} className="bg-tertiary-bg rounded-lg border border-border-main p-5 hover:border-brand transition-all group">
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-3">
                       <div className="w-1.5 h-1.5 rounded-full bg-[#10b981] shadow-[0_0_8px_#10b981]" />
@@ -362,9 +362,9 @@ const BuyerPaymentPage = () => {
 
       {/* Hiero SDK Network Console Widget */}
       <div className="mt-16 -mx-6 relative z-10">
-        <div className="bg-[#050505] border-t border-[#10b981]/30 shadow-2xl overflow-hidden">
+        <div className="bg-primary-bg border-t border-brand/30 shadow-2xl overflow-hidden">
           {/* Console Header */}
-          <div className="flex items-center justify-between px-6 py-3 bg-[#0a0a0a] border-b border-white/5">
+          <div className="flex items-center justify-between px-6 py-3 bg-secondary-bg border-b border-border-main">
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-[#10b981] animate-pulse shadow-[0_0_8px_#10b981]" />
@@ -397,7 +397,7 @@ const BuyerPaymentPage = () => {
               >
                 <div className="grid grid-cols-1 md:grid-cols-12 min-h-[480px]">
                   {/* Left: Event Timeline */}
-                  <div className="md:col-span-3 border-r border-white/5 bg-[#080808] p-4 overflow-y-auto max-h-[500px] scrollbar-hide">
+                  <div className="md:col-span-3 border-r border-border-main bg-secondary-bg p-4 overflow-y-auto max-h-[500px] scrollbar-hide">
                     <div className="flex items-center justify-between mb-6 px-1">
                       <h3 className="text-[10px] font-bold text-text-muted uppercase tracking-widest">Event Timeline</h3>
                       <button className="text-[8px] text-text-muted hover:text-[#10b981] uppercase font-bold transition-colors">Clear</button>
@@ -544,7 +544,7 @@ const BuyerPaymentPage = () => {
                       </button>
                     </div>
 
-                    <div className="p-8 flex-grow overflow-auto bg-[#030303] scrollbar-thin scrollbar-thumb-white/10">
+                    <div className="p-8 flex-grow overflow-auto bg-primary-bg scrollbar-thin scrollbar-thumb-white/10">
                       <pre className="text-[#10b981] font-mono text-[13px] leading-relaxed selection:bg-[#10b981]/30">
                         {JSON.stringify(
                           showRawData === -1 ? transaction : (transaction._tempReconstructed?.[showRawData as number] || transaction.metadata?.history?.[showRawData as number] || { message: "Ready for Hiero SDK Emission..." }), 
@@ -560,7 +560,7 @@ const BuyerPaymentPage = () => {
           </AnimatePresence>
 
           {/* Console Footer Status Bar */}
-          <div className="flex items-center justify-between px-6 py-2.5 bg-[#10b981] text-[#050505] font-bold">
+          <div className="flex items-center justify-between px-6 py-2.5 bg-brand text-black font-bold">
             <div className="flex items-center gap-8">
               <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest font-black">
                 <div className="w-2.5 h-2.5 rounded-full bg-[#050505] animate-pulse" />

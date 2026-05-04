@@ -104,7 +104,7 @@ const LoginPage = () => {
                 required
                 value={formData.email}
                 onChange={(e) => setFormData({...formData, email: e.target.value})}
-                className="w-full bg-secondary border border-border-color rounded py-2.5 pl-10 pr-4 focus:border-brand focus:outline-none text-sm"
+                className="w-full bg-secondary-bg border border-border-color rounded py-2.5 pl-10 pr-4 focus:border-brand focus:outline-none text-sm"
                 placeholder="name@company.com"
               />
             </div>
@@ -119,7 +119,7 @@ const LoginPage = () => {
                 required
                 value={formData.password}
                 onChange={(e) => setFormData({...formData, password: e.target.value})}
-                className="w-full bg-secondary border border-border-color rounded py-2.5 pl-10 pr-4 focus:border-brand focus:outline-none text-sm"
+                className="w-full bg-secondary-bg border border-border-color rounded py-2.5 pl-10 pr-4 focus:border-brand focus:outline-none text-sm"
                 placeholder="••••••••"
               />
             </div>

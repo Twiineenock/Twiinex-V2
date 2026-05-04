@@ -147,8 +147,8 @@ const LandingPage = () => {
         <div className="flex items-center gap-6">
           <a href="#" className="hover:text-brand transition-colors">Privacy</a>
           <a href="#" className="hover:text-brand transition-colors">Terms</a>
-          <a href="https://hashscan.io" target="_blank" className="flex items-center gap-1 hover:text-brand transition-colors">
-            Explorer <ExternalLink className="w-2.5 h-2.5" />
+          <a href="https://hashscan.io/testnet" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:text-brand transition-colors">
+            Hashscan Explorer <ExternalLink className="w-2.5 h-2.5" />
           </a>
         </div>
       </div>

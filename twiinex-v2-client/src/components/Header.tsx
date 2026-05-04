@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Sun, Moon, ExternalLink } from 'lucide-react';
+import { Sun, Moon, LogOut } from 'lucide-react';
 import logo from '../assets/logo.png';
 
 
@@ -30,28 +30,24 @@ const Header = () => {
     setTheme(prev => prev === 'light' ? 'dark' : 'light');
   };
 
-  /*
   const handleLogout = () => {
     localStorage.removeItem('twiinex_user');
     setUser(null);
     window.location.href = '/';
   };
-  */
+
 
   return (
     <header className="h-[64px] border-b border-border-color bg-primary-bg sticky top-0 z-50 flex items-center justify-between px-6 shadow-sm">
       <div className="flex items-center gap-8">
         <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-          <img src={logo} alt="Twiinex Logo" className="w-8 h-8 object-contain" />
+          <img src={logo} alt="Twiinex Logo" className="w-12 h-12 object-contain" />
           <span className="font-bold text-lg tracking-tight">Twiinex</span>
         </Link>
         
         <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
           <Link to="/" className="text-text-secondary hover:text-brand">Home</Link>
           {user && <Link to="/dashboard" className="text-text-secondary hover:text-brand">Dashboard</Link>}
-          <a href="https://hashscan.io/testnet" target="_blank" rel="noopener noreferrer" className="text-text-secondary hover:text-brand flex items-center gap-1">
-            Hashscan <ExternalLink className="w-3 h-3" />
-          </a>
         </nav>
       </div>
 
@@ -73,6 +69,13 @@ const Header = () => {
             <Link to="/dashboard" className="w-8 h-8 rounded-full bg-brand/10 border border-brand/20 flex items-center justify-center group hover:bg-brand/20 transition-all">
               <span className="text-brand text-xs font-bold uppercase">{user.name?.charAt(0)}</span>
             </Link>
+            <button 
+              onClick={handleLogout}
+              className="p-2 text-text-muted hover:text-brand transition-colors"
+              title="Logout"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
           </div>
         ) : (
           <Link to="/login" className="btn-primary text-sm px-4">

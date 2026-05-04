@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Copy, Clock, ShieldCheck, DollarSign, CheckCircle2, X, Camera, Image as ImageIcon, MessageSquare, LogOut, ChevronRight, User, Truck } from 'lucide-react';
+import { Plus, Copy, Clock, ShieldCheck, DollarSign, CheckCircle2, X, Camera, Image as ImageIcon, MessageSquare, ChevronRight, User, Truck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { createEscrow, getTransactions, updateTransactionStatus } from '../api/escrow';
 
@@ -144,15 +144,6 @@ const VendorDashboard = () => {
           </div>
           
           <div className="flex gap-3">
-            <button 
-              onClick={() => {
-                localStorage.removeItem('twiinex_user');
-                window.location.href = '/login';
-              }}
-              className="btn-outline text-xs px-4 flex items-center gap-2"
-            >
-              <LogOut className="w-3.5 h-3.5" /> Logout
-            </button>
             <button 
               onClick={() => {
                 setCreatedLinkId(null);

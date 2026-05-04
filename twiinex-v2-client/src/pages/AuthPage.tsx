@@ -45,7 +45,7 @@ const AuthPage = () => {
       {/* Left Side: Branding & Info */}
       <div className="hidden lg:flex flex-1 relative items-center justify-center p-12 overflow-hidden border-r border-white/5">
         <div className="absolute inset-0 bg-gradient-to-br from-brand/20 to-transparent opacity-50" />
-        <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_30%_20%,rgba(139,92,246,0.1),transparent)]" />
+        <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_30%_20%,rgba(16,185,129,0.05),transparent)]" />
         
         <div className="relative z-10 max-w-xl">
           <motion.div 
@@ -53,7 +53,7 @@ const AuthPage = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <div className="w-16 h-16 bg-brand rounded-2xl flex items-center justify-center mb-8 shadow-[0_0_40px_rgba(139,92,246,0.4)]">
+            <div className="w-16 h-16 bg-brand rounded-2xl flex items-center justify-center mb-8 shadow-[0_0_40px_rgba(16,185,129,0.3)]">
               <Shield className="text-white w-8 h-8" />
             </div>
             <h1 className="text-6xl font-black text-white tracking-tighter mb-6 leading-none">

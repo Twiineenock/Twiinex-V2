@@ -306,33 +306,33 @@ const BuyerPaymentPage = () => {
       </div>
 
       {/* Hiero SDK Network Console Widget */}
-      <div className="mt-16 -mx-6">
-        <div className="bg-[#050505] border-t border-brand/30 shadow-2xl overflow-hidden">
+      <div className="mt-16 -mx-6 relative z-10">
+        <div className="bg-[#050505] border-t border-[#10b981]/30 shadow-2xl overflow-hidden">
           {/* Console Header */}
           <div className="flex items-center justify-between px-6 py-3 bg-[#0a0a0a] border-b border-white/5">
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-brand animate-pulse shadow-[0_0_8px_#10b981]" />
-                <span className="text-[10px] font-bold text-brand uppercase tracking-widest">Hiero SDK Network Console</span>
+                <div className="w-2 h-2 rounded-full bg-[#10b981] animate-pulse shadow-[0_0_8px_#10b981]" />
+                <span className="text-[10px] font-bold text-[#10b981] uppercase tracking-widest">Hiero SDK Network Console</span>
               </div>
             </div>
             <div className="flex items-center gap-6">
               <div className="flex items-center gap-2 text-[9px] font-mono text-text-muted uppercase">
-                Latency: <span className="text-brand">124ms</span>
+                Latency: <span className="text-[#10b981]">124ms</span>
               </div>
               <div className="flex items-center gap-2 text-[9px] font-mono text-text-muted uppercase">
-                Status: <span className="text-brand">200 OK</span>
+                Status: <span className="text-[#10b981]">200 OK</span>
               </div>
               <button 
                 onClick={() => setShowAudit(!showAudit)}
                 className="p-1 hover:bg-white/5 rounded transition-colors"
               >
-                <ChevronRight className={`w-4 h-4 transition-transform ${showAudit ? 'rotate-90' : ''}`} />
+                <ChevronRight className={`w-4 h-4 text-[#10b981] transition-transform ${showAudit ? 'rotate-90' : ''}`} />
               </button>
             </div>
           </div>
 
-          <AnimatePresence>
+          <AnimatePresence initial={false}>
             {showAudit && (
               <motion.div 
                 initial={{ height: 0 }}
@@ -340,23 +340,23 @@ const BuyerPaymentPage = () => {
                 exit={{ height: 0 }}
                 className="overflow-hidden"
               >
-                <div className="grid grid-cols-1 md:grid-cols-12 min-h-[450px]">
+                <div className="grid grid-cols-1 md:grid-cols-12 min-h-[480px]">
                   {/* Left: Event Timeline */}
-                  <div className="md:col-span-3 border-r border-white/5 bg-[#080808] p-4 overflow-y-auto max-h-[500px]">
-                    <div className="flex items-center justify-between mb-6">
+                  <div className="md:col-span-3 border-r border-white/5 bg-[#080808] p-4 overflow-y-auto max-h-[500px] scrollbar-hide">
+                    <div className="flex items-center justify-between mb-6 px-1">
                       <h3 className="text-[10px] font-bold text-text-muted uppercase tracking-widest">Event Timeline</h3>
-                      <button className="text-[8px] text-text-muted hover:text-brand uppercase font-bold">Clear</button>
+                      <button className="text-[8px] text-text-muted hover:text-[#10b981] uppercase font-bold transition-colors">Clear</button>
                     </div>
                     
                     <div className="space-y-4">
-                      {/* API Call (Synthetic) */}
-                      <div className="group relative pl-4 border-l border-brand/20">
-                        <div className="absolute left-[-4px] top-0 w-2 h-2 rounded-full bg-brand/40" />
+                      {/* Synthetic API Start */}
+                      <div className="group relative pl-4 border-l border-[#10b981]/20">
+                        <div className="absolute left-[-4.5px] top-0 w-2 h-2 rounded-full bg-[#10b981]/40" />
                         <div className="flex items-center gap-2 mb-1">
-                          <span className="px-1.5 py-0.5 rounded-[2px] bg-brand/10 text-brand text-[8px] font-bold uppercase tracking-tighter">API</span>
+                          <span className="px-1.5 py-0.5 rounded-[2px] bg-[#10b981]/10 text-[#10b981] text-[8px] font-bold uppercase tracking-tighter">API</span>
                           <span className="text-[9px] text-text-muted font-mono">{new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
                         </div>
-                        <div className="text-[10px] font-bold text-primary uppercase leading-tight group-hover:text-brand transition-colors cursor-pointer">
+                        <div className="text-[10px] font-bold text-white uppercase leading-tight group-hover:text-[#10b981] transition-colors cursor-pointer">
                           GET_TRANSACTION
                         </div>
                       </div>
@@ -366,22 +366,26 @@ const BuyerPaymentPage = () => {
                           key={idx}
                           onClick={() => setShowRawData(idx)}
                           className={`group relative pl-4 border-l cursor-pointer transition-all ${
-                            showRawData === idx ? 'border-brand' : 'border-white/10 hover:border-white/30'
+                            showRawData === idx ? 'border-[#10b981]' : 'border-white/10 hover:border-white/30'
                           }`}
                         >
-                          <div className={`absolute left-[-4px] top-0 w-2 h-2 rounded-full ${
-                            showRawData === idx ? 'bg-brand' : 'bg-white/10'
+                          <div className={`absolute left-[-4.5px] top-0 w-2 h-2 rounded-full ${
+                            showRawData === idx ? 'bg-[#10b981] shadow-[0_0_8px_#10b981]' : 'bg-white/10'
                           }`} />
                           <div className="flex items-center gap-2 mb-1">
-                            <span className="px-1.5 py-0.5 rounded-[2px] bg-purple-500/10 text-purple-400 text-[8px] font-bold uppercase tracking-tighter">EVM</span>
+                            <span className={`px-1.5 py-0.5 rounded-[2px] text-[8px] font-bold uppercase tracking-tighter ${
+                              log.type === 'VAULT_GENESIS' ? 'bg-brand/10 text-brand' : 'bg-purple-500/10 text-purple-400'
+                            }`}>
+                              {log.type === 'VAULT_GENESIS' ? 'SYS' : 'EVM'}
+                            </span>
                             <span className="text-[9px] text-text-muted font-mono">
                               {new Date(log.timestamp).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}
                             </span>
                           </div>
                           <div className={`text-[10px] font-bold uppercase leading-tight transition-colors ${
-                            showRawData === idx ? 'text-brand' : 'text-primary group-hover:text-brand'
+                            showRawData === idx ? 'text-[#10b981]' : 'text-primary group-hover:text-[#10b981]'
                           }`}>
-                            CONTRACT_EMISSION: {log.type?.split('_').pop()}
+                            {log.type === 'VAULT_GENESIS' ? 'Contract_Genesis' : `Contract_Emission: ${log.type?.split('_').pop()}`}
                           </div>
                         </div>
                       ))}
@@ -392,22 +396,22 @@ const BuyerPaymentPage = () => {
                   <div className="md:col-span-9 bg-[#050505] flex flex-col h-full">
                     <div className="flex items-center justify-between px-6 py-3 border-b border-white/5 bg-[#0a0a0a]/50">
                       <div className="flex items-center gap-2">
-                        <Shield className="w-3.5 h-3.5 text-brand" />
-                        <span className="text-[10px] font-mono text-text-muted uppercase">EVM_RESPONSE.JSON</span>
+                        <div className="w-1 h-3 bg-[#10b981] rounded-full" />
+                        <span className="text-[10px] font-mono text-text-muted uppercase tracking-widest">EVM_RESPONSE.JSON</span>
                       </div>
                       <button 
                         onClick={handleCopyJSON}
-                        className="flex items-center gap-2 px-3 py-1.5 rounded bg-brand/10 border border-brand/20 text-brand text-[9px] font-bold uppercase hover:bg-brand/20 transition-all"
+                        className="flex items-center gap-2 px-4 py-2 rounded bg-[#10b981]/10 border border-[#10b981]/20 text-[#10b981] text-[9px] font-bold uppercase hover:bg-[#10b981]/20 transition-all active:scale-95"
                       >
                         {jsonCopied ? <CheckCircle2 className="w-3 h-3" /> : <ExternalLink className="w-3 h-3" />}
                         {jsonCopied ? 'Logs Copied!' : 'Copy Logs'}
                       </button>
                     </div>
 
-                    <div className="p-8 flex-grow overflow-auto bg-[#030303]">
-                      <pre className="text-[#10b981] font-mono text-[12px] leading-relaxed selection:bg-brand/30">
+                    <div className="p-8 flex-grow overflow-auto bg-[#030303] scrollbar-thin scrollbar-thumb-white/10">
+                      <pre className="text-[#10b981] font-mono text-[13px] leading-relaxed selection:bg-[#10b981]/30">
                         {JSON.stringify(
-                          transaction.metadata?.history?.[showRawData as number] || { message: "Waiting for network emission..." }, 
+                          transaction.metadata?.history?.[showRawData as number] || { message: "Ready for Hiero SDK Emission..." }, 
                           null, 
                           2
                         )}
@@ -420,19 +424,19 @@ const BuyerPaymentPage = () => {
           </AnimatePresence>
 
           {/* Console Footer Status Bar */}
-          <div className="flex items-center justify-between px-6 py-2 bg-brand text-[#050505] font-bold">
-            <div className="flex items-center gap-6">
-              <div className="flex items-center gap-2 text-[9px] uppercase tracking-widest">
-                <div className="w-2 h-2 rounded-full bg-[#050505] animate-pulse" />
+          <div className="flex items-center justify-between px-6 py-2.5 bg-[#10b981] text-[#050505] font-bold">
+            <div className="flex items-center gap-8">
+              <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest font-black">
+                <div className="w-2.5 h-2.5 rounded-full bg-[#050505] animate-pulse" />
                 Testnet-Ready
               </div>
-              <div className="flex items-center gap-2 text-[9px] uppercase tracking-widest border-l border-[#050505]/20 pl-6">
-                <Lock className="w-3 h-3" />
+              <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest border-l border-[#050505]/20 pl-8 font-black">
+                <Lock className="w-3.5 h-3.5" />
                 Secure Vault Active
               </div>
             </div>
-            <div className="text-[9px] uppercase tracking-tighter">
-              @ Twiinex Protocol V2.0
+            <div className="text-[10px] uppercase tracking-tighter font-black opacity-80">
+              © TWIINEX PROTOCOL V2.0 | HIERO ENTERPRISE
             </div>
           </div>
         </div>

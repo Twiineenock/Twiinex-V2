@@ -87,12 +87,15 @@ public class TransactionController {
         if (metadata == null) metadata = new HashMap<>();
 
         List<Map<String, Object>> history = (List<Map<String, Object>>) metadata.get("history");
-        if (history != null) {
-            Map<String, Object> historyItem = new HashMap<>();
-            historyItem.put("status", status);
-            historyItem.put("at", new Date().toString());
-            history.add(historyItem);
+        if (history == null) {
+            history = new ArrayList<>();
+            metadata.put("history", history);
         }
+
+        Map<String, Object> eventLog = new HashMap<>();
+        eventLog.put("status", status);
+        eventLog.put("timestamp", new Date().toString());
+        eventLog.put("type", "LIFECYCLE_UPDATE");
 
         long amount = ((Number) tx.get("amount")).longValue();
 
@@ -101,17 +104,18 @@ public class TransactionController {
             Map<String, Object> contractResult = hederaService.executeContractFunction("createOrder", id);
             if ((Boolean) contractResult.getOrDefault("success", false)) {
                 metadata.put("lastTxId", contractResult.get("transactionId"));
-                metadata.put("isContractCall", true);
+                eventLog.put("contractTxId", contractResult.get("transactionId"));
             }
             // 2. Token Minting
-            hederaService.mintVaultTokens(amount, id);
+            Map<String, Object> mintResult = hederaService.mintVaultTokens(amount, id);
+            eventLog.put("htsMintResult", mintResult);
             
         } else if ("SHIPPED".equals(status)) {
             // On-Chain Shipment Log
             Map<String, Object> contractResult = hederaService.executeContractFunction("markShipped", id);
             if ((Boolean) contractResult.getOrDefault("success", false)) {
                 metadata.put("lastTxId", contractResult.get("transactionId"));
-                metadata.put("isContractCall", true);
+                eventLog.put("contractTxId", contractResult.get("transactionId"));
             }
             
         } else if ("COMPLETED".equals(status)) {
@@ -119,10 +123,11 @@ public class TransactionController {
             Map<String, Object> contractResult = hederaService.executeContractFunction("confirmReceipt", id);
             if ((Boolean) contractResult.getOrDefault("success", false)) {
                 metadata.put("lastTxId", contractResult.get("transactionId"));
-                metadata.put("isContractCall", true);
+                eventLog.put("contractTxId", contractResult.get("transactionId"));
             }
             // 2. Token Burn
-            hederaService.burnVaultTokens(amount);
+            Map<String, Object> burnResult = hederaService.burnVaultTokens(amount);
+            eventLog.put("htsBurnResult", burnResult);
         }
 
         String message = String.format("{\"action\":\"STATUS_UPDATE\",\"id\":\"%s\",\"status\":\"%s\",\"timestamp\":\"%s\"}", id, status, new Date().toString());
@@ -131,8 +136,10 @@ public class TransactionController {
         if ((Boolean) hcsResult.getOrDefault("success", false)) {
             metadata.put("hcsTopicId", hcsResult.get("topicId"));
             metadata.put("hcsSequenceNumber", hcsResult.get("sequenceNumber"));
+            eventLog.put("hcsResult", hcsResult);
         }
 
+        history.add(eventLog);
         supabaseService.updateStatus(id, status, metadata);
         tx.put("status", status);
         tx.put("metadata", metadata);
@@ -200,13 +207,29 @@ public class TransactionController {
                 String message = String.format("{\"action\":\"PAYMENT_VERIFIED\",\"id\":\"%s\",\"flw_ref\":\"%s\",\"amount\":%d,\"timestamp\":\"%s\"}", id, transactionId, amount, new Date().toString());
                 Map<String, Object> hcsResult = hederaService.submitHCSEvent(message);
 
+                // Update Metadata & History
                 Map<String, Object> metadata = (Map<String, Object>) tx.get("metadata");
                 if (metadata == null) metadata = new HashMap<>();
+                List<Map<String, Object>> history = (List<Map<String, Object>>) metadata.get("history");
+                if (history == null) {
+                    history = new ArrayList<>();
+                    metadata.put("history", history);
+                }
+
+                Map<String, Object> eventLog = new HashMap<>();
+                eventLog.put("status", "FUNDED");
+                eventLog.put("timestamp", new Date().toString());
+                eventLog.put("type", "PAYMENT_VERIFICATION");
+                eventLog.put("flw_ref", transactionId);
+                eventLog.put("htsMintResult", htsResult);
+                eventLog.put("hcsResult", hcsResult);
 
                 if ((Boolean) hcsResult.getOrDefault("success", false)) {
                     metadata.put("hcsTopicId", hcsResult.get("topicId"));
                     metadata.put("hcsSequenceNumber", hcsResult.get("sequenceNumber"));
                 }
+
+                history.add(eventLog);
 
                 // Update Supabase
                 supabaseService.updateStatus(id, "FUNDED", metadata);

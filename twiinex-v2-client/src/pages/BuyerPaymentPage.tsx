@@ -297,80 +297,115 @@ const BuyerPaymentPage = () => {
         </div>
       </div>
 
-      {/* Hashscan-style Audit Section */}
-      <div className="mt-12 border-t border-border-color pt-8">
-        <button 
-          onClick={() => setShowAudit(!showAudit)}
-          className="flex items-center justify-between w-full text-text-muted hover:text-primary transition-colors mb-4"
-        >
-          <span className="text-xs font-bold uppercase tracking-widest flex items-center gap-2">
-            <Shield className="w-3.5 h-3.5" /> Immutable Audit Trail (Hedera HCS)
-          </span>
-          <ChevronRight className={`w-4 h-4 transition-transform ${showAudit ? 'rotate-90' : ''}`} />
-        </button>
-
-        <AnimatePresence>
-          {showAudit && (
-            <motion.div 
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              className="overflow-hidden"
+      {/* Full-Width Event Explorer Section */}
+      <div className="mt-16 border-t border-border-color pt-12 -mx-6 px-6 bg-secondary-bg/30">
+        <div className="max-w-4xl mx-auto">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h2 className="text-xl mb-1">Hedera HCS Audit Ledger</h2>
+              <p className="text-xs text-text-muted">Real-time immutable event logs for Topic {transaction.metadata?.hcsTopicId || '0.0.X'}</p>
+            </div>
+            <button 
+              onClick={() => setShowAudit(!showAudit)}
+              className="btn-outline px-4 py-2 text-[10px] font-bold uppercase tracking-widest flex items-center gap-2"
             >
-              <div className="bg-secondary-bg border border-border-color rounded p-4 space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <span className="label-text block mb-1">Network</span>
-                    <span className="text-xs font-mono">Hedera Testnet</span>
-                  </div>
-                  <div>
-                    <span className="label-text block mb-1">Consensus Type</span>
-                    <span className="text-xs font-mono">HCS (Topic 0.0.X)</span>
-                  </div>
-                </div>
-                <div className="pt-4 border-t border-border-color">
-                  <span className="label-text block mb-2">Live Proof of Transaction</span>
-                  <div className="flex flex-col gap-2 mb-4">
-                    <a 
-                      href={`https://hashscan.io/testnet/transaction/${(transaction.metadata?.lastTxId || '').replace('@', '-').replace(/\.(?=\d+$)/, '-')}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xs text-brand hover:underline flex items-center gap-1"
-                    >
-                      View Consensus Log on Hashscan <ExternalLink className="w-3 h-3" />
-                    </a>
-                    <p className="text-[10px] text-text-muted leading-relaxed italic">
-                      This transaction is mathematically proven and immutable. Every step is recorded on the Hedera public ledger.
-                    </p>
+              {showAudit ? 'Collapse Explorer' : 'Expand Event Explorer'}
+            </button>
+          </div>
+
+          <AnimatePresence>
+            {showAudit && (
+              <motion.div 
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                className="overflow-hidden"
+              >
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-6 bg-black rounded-lg border border-border-color overflow-hidden shadow-2xl min-h-[400px]">
+                  {/* Event Sidebar */}
+                  <div className="md:col-span-4 border-r border-border-color bg-secondary-bg/20 p-4 overflow-y-auto max-h-[500px]">
+                    <div className="space-y-2">
+                      {(transaction.metadata?.history || []).map((log: any, idx: number) => (
+                        <button 
+                          key={idx}
+                          onClick={() => setShowRawData(idx)}
+                          className={`w-full text-left p-3 rounded transition-all border ${
+                            showRawData === idx ? 'bg-brand/10 border-brand' : 'bg-primary-bg/50 border-transparent hover:border-border-color'
+                          }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className={`p-1.5 rounded-full ${showRawData === idx ? 'bg-brand text-white' : 'bg-tertiary-bg text-text-muted'}`}>
+                              <Shield className="w-3 h-3" />
+                            </div>
+                            <div>
+                              <div className="text-[10px] font-bold uppercase tracking-wider leading-none mb-1">
+                                {log.status}
+                              </div>
+                              <div className="text-[9px] text-text-muted font-mono leading-none">
+                                {new Date(log.timestamp).toLocaleTimeString()}
+                              </div>
+                            </div>
+                          </div>
+                        </button>
+                      ))}
+                      {(!transaction.metadata?.history || transaction.metadata.history.length === 0) && (
+                        <div className="text-center py-10">
+                          <p className="text-[10px] text-text-muted italic">No ledger events found.</p>
+                        </div>
+                      )}
+                    </div>
                   </div>
 
-                  {/* Mighty JSON Logs Section */}
-                  <button 
-                    onClick={() => setShowRawData(!showRawData)}
-                    className="w-full py-2 bg-primary-bg border border-border-color rounded text-[10px] font-bold uppercase tracking-widest hover:bg-tertiary-bg transition-colors flex items-center justify-center gap-2"
-                  >
-                    {showRawData ? 'Hide' : 'Show'} Raw Blockchain Data
-                  </button>
-
-                  <AnimatePresence>
-                    {showRawData && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        className="mt-4"
+                  {/* JSON Console */}
+                  <div className="md:col-span-8 p-6 flex flex-col h-full bg-[#0a0a0a]">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-success animate-pulse" />
+                        <span className="text-[10px] font-mono text-success uppercase tracking-widest">Live HCS Console</span>
+                      </div>
+                      <button 
+                        onClick={() => {
+                          const log = transaction.metadata?.history?.[showRawData as number] || transaction;
+                          navigator.clipboard.writeText(JSON.stringify(log, null, 2));
+                          alert('Log JSON Copied!');
+                        }}
+                        className="text-[9px] font-bold text-brand hover:underline flex items-center gap-1"
                       >
-                        <pre className="bg-black text-[#00ff00] p-4 rounded font-mono text-[10px] overflow-x-auto max-h-60 shadow-inner">
-                          {JSON.stringify(transaction, null, 2)}
-                        </pre>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                        Copy JSON Payload
+                      </button>
+                    </div>
+                    
+                    <div className="flex-grow overflow-auto">
+                      <pre className="text-[#00ff00] font-mono text-[11px] leading-relaxed">
+                        {JSON.stringify(
+                          transaction.metadata?.history?.[showRawData as number] || { message: "Select an event to view raw blockchain data." }, 
+                          null, 
+                          2
+                        )}
+                      </pre>
+                    </div>
+
+                    <div className="mt-6 pt-4 border-t border-white/5">
+                      <div className="flex items-center justify-between">
+                        <div className="text-[9px] text-text-muted font-mono">
+                          Topic: {transaction.metadata?.hcsTopicId || 'N/A'} | Seq: {transaction.metadata?.history?.[showRawData as number]?.hcsResult?.sequenceNumber || 'N/A'}
+                        </div>
+                        <a 
+                          href={`https://hashscan.io/testnet/transaction/${transaction.metadata?.lastTxId?.replace('@', '-').replace(/\.(?=\d+$)/, '-')}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[9px] text-brand hover:underline flex items-center gap-1"
+                        >
+                          Verify on Hashscan <ExternalLink className="w-2 h-2" />
+                        </a>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
     </div>
   );

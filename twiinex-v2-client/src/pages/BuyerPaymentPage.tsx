@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Shield, Lock, CreditCard, CheckCircle2, MessageSquare, Truck, Info, ExternalLink, ArrowLeft } from 'lucide-react';
+import { Shield, Lock, CreditCard, CheckCircle2, MessageSquare, Truck, Info, ExternalLink, ArrowLeft, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getTransaction, verifyTransaction, updateTransactionStatus, updateTransactionMetadata } from '../api/escrow';
 

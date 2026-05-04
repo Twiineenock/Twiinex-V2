@@ -28,11 +28,13 @@ const Header = () => {
     setTheme(prev => prev === 'light' ? 'dark' : 'light');
   };
 
+  /*
   const handleLogout = () => {
     localStorage.removeItem('twiinex_user');
     setUser(null);
     window.location.href = '/';
   };
+  */
 
   return (
     <header className="h-[64px] border-b border-border-color bg-primary-bg sticky top-0 z-50 flex items-center justify-between px-6 shadow-sm">

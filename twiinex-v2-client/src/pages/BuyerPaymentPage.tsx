@@ -320,8 +320,9 @@ const BuyerPaymentPage = () => {
 
           <div className="space-y-4">
             {(transaction.metadata?.history || []).map((log: any, idx: number) => {
-              const eventName = log.event_type || log.status || log.type || log.action || 'Unknown Event';
-              const blockLabel = log.type === 'VAULT_GENESIS' || eventName.includes('Created') || eventName.includes('PENDING') ? 'Genesis' : 'Live';
+              const rawName = log.event_type || log.status || log.type || log.action || 'NETWORK_EVENT';
+              const eventName = String(rawName).toUpperCase();
+              const blockLabel = eventName.includes('CREATED') || eventName.includes('GENESIS') || eventName.includes('PENDING') ? 'Genesis' : 'Live';
               
               return (
                 <div key={idx} className="bg-[#151515] rounded-lg border border-white/5 p-5 hover:border-[#10b981]/30 transition-all group">
@@ -329,7 +330,7 @@ const BuyerPaymentPage = () => {
                     <div className="flex items-center gap-3">
                       <div className="w-1.5 h-1.5 rounded-full bg-[#10b981] shadow-[0_0_8px_#10b981]" />
                       <span className="text-[9px] font-black text-[#10b981] uppercase tracking-widest">
-                        Event: {eventName.replace('VAULT_', '').replace('PAYMENT_', '').replace('Emission', '').replace('CONTRACT_', '')}
+                        Event: {eventName.replace('VAULT_', '').replace('PAYMENT_', '').replace('EMISSION', '').replace('CONTRACT_', '')}
                       </span>
                     </div>
                     <span className="text-[9px] font-mono text-text-muted uppercase">Block: {blockLabel}</span>
@@ -425,15 +426,29 @@ const BuyerPaymentPage = () => {
                       </div>
 
                       {(transaction.metadata?.history || []).map((log: any, idx: number) => {
-                        // Robust Key Extraction
-                        const eventName = log.event_type || log.status || log.type || log.action || 'Network_Emission';
-                        const rawTimestamp = log.consensus_timestamp || log.timestamp || log.at || log.created_at;
+                        // Robust Key Extraction - Aggressive Fallbacks
+                        const rawName = log.event_type || log.status || log.type || log.action || 'NETWORK_EVENT';
+                        const eventName = String(rawName).toUpperCase();
                         
-                        const timestamp = rawTimestamp 
-                          ? (typeof rawTimestamp === 'number' || !isNaN(parseFloat(rawTimestamp)) 
-                              ? new Date(parseFloat(rawTimestamp) * (rawTimestamp > 10000000000 ? 1 : 1000)).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})
-                              : new Date(rawTimestamp).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}))
-                          : 'Live';
+                        const rawTimestamp = log.consensus_timestamp || log.at || log.timestamp || log.created_at;
+                        
+                        let displayTime = 'Live';
+                        try {
+                          if (rawTimestamp) {
+                            if (typeof rawTimestamp === 'number' || !isNaN(parseFloat(rawTimestamp))) {
+                              const ts = parseFloat(rawTimestamp);
+                              displayTime = new Date(ts * (ts > 10000000000 ? 1 : 1000)).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+                            } else {
+                              displayTime = new Date(rawTimestamp).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+                            }
+                          }
+                        } catch (e) {
+                          displayTime = 'Consensus';
+                        }
+
+                        if (displayTime === 'Invalid Date') displayTime = 'Audit';
+
+                        const isSystem = eventName.includes('CREATED') || eventName.includes('GENESIS') || eventName.includes('PENDING');
 
                         return (
                           <div 
@@ -448,16 +463,16 @@ const BuyerPaymentPage = () => {
                             }`} />
                             <div className="flex items-center gap-2 mb-1">
                               <span className={`px-1.5 py-0.5 rounded-[2px] text-[8px] font-bold uppercase tracking-tighter ${
-                                eventName.includes('Created') || eventName.includes('GENESIS') || eventName.includes('PENDING') ? 'bg-brand/10 text-brand' : 'bg-purple-500/10 text-purple-400'
+                                isSystem ? 'bg-brand/10 text-brand' : 'bg-purple-500/10 text-purple-400'
                               }`}>
-                                {eventName.includes('Created') || eventName.includes('GENESIS') || eventName.includes('PENDING') ? 'SYS' : 'EVM'}
+                                {isSystem ? 'SYS' : 'EVM'}
                               </span>
-                              <span className="text-[9px] text-text-muted font-mono">{timestamp}</span>
+                              <span className="text-[9px] text-text-muted font-mono">{displayTime}</span>
                             </div>
                             <div className={`text-[10px] font-bold uppercase leading-tight transition-colors ${
                               showRawData === idx ? 'text-[#10b981]' : 'text-primary group-hover:text-[#10b981]'
                             }`}>
-                              {eventName.startsWith('Contract_') ? eventName : `Contract_Emission: ${eventName.replace('Emission', '')}`}
+                              {eventName.startsWith('CONTRACT_') ? eventName : `CONTRACT_EMISSION: ${eventName.replace('EMISSION', '')}`}
                             </div>
                           </div>
                         );

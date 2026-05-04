@@ -426,6 +426,8 @@ const BuyerPaymentPage = () => {
                       </div>
 
                       {(transaction.metadata?.history || []).map((log: any, idx: number) => {
+                        if (!log) return null;
+                        
                         // Robust Key Extraction - Aggressive Fallbacks
                         const rawName = log.event_type || log.status || log.type || log.action || 'NETWORK_EVENT';
                         const eventName = String(rawName).toUpperCase();
@@ -435,18 +437,22 @@ const BuyerPaymentPage = () => {
                         let displayTime = 'Live';
                         try {
                           if (rawTimestamp) {
-                            if (typeof rawTimestamp === 'number' || !isNaN(parseFloat(rawTimestamp))) {
+                            const isNumeric = typeof rawTimestamp === 'number' || (!isNaN(parseFloat(rawTimestamp)) && !String(rawTimestamp).includes('GMT') && !String(rawTimestamp).includes(':'));
+                            
+                            if (isNumeric) {
                               const ts = parseFloat(rawTimestamp);
-                              displayTime = new Date(ts * (ts > 10000000000 ? 1 : 1000)).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+                              // Multiplier safety: Hedera timestamps are in seconds, JS in ms
+                              const multiplier = (ts > 10000000000) ? 1 : 1000;
+                              displayTime = new Date(ts * multiplier).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
                             } else {
                               displayTime = new Date(rawTimestamp).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
                             }
                           }
                         } catch (e) {
-                          displayTime = 'Consensus';
+                          displayTime = 'Audit';
                         }
 
-                        if (displayTime === 'Invalid Date') displayTime = 'Audit';
+                        if (displayTime === 'Invalid Date' || !displayTime) displayTime = 'Audit';
 
                         const isSystem = eventName.includes('CREATED') || eventName.includes('GENESIS') || eventName.includes('PENDING');
 
@@ -463,7 +469,7 @@ const BuyerPaymentPage = () => {
                             }`} />
                             <div className="flex items-center gap-2 mb-1">
                               <span className={`px-1.5 py-0.5 rounded-[2px] text-[8px] font-bold uppercase tracking-tighter ${
-                                isSystem ? 'bg-brand/10 text-brand' : 'bg-purple-500/10 text-purple-400'
+                                isSystem ? 'bg-[#10b981]/10 text-[#10b981]' : 'bg-purple-500/10 text-purple-400'
                               }`}>
                                 {isSystem ? 'SYS' : 'EVM'}
                               </span>

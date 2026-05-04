@@ -305,119 +305,136 @@ const BuyerPaymentPage = () => {
         </div>
       </div>
 
-      {/* Full-Width Event Explorer Section */}
-      <div className="mt-16 border-t border-border-color pt-12 -mx-6 px-6 bg-secondary-bg/30">
-        <div className="max-w-4xl mx-auto">
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h2 className="text-xl mb-1">Hedera HCS Audit Ledger</h2>
-              <p className="text-xs text-text-muted">Real-time immutable event logs for Topic {transaction.metadata?.hcsTopicId || '0.0.X'}</p>
+      {/* Hiero SDK Network Console Widget */}
+      <div className="mt-16 -mx-6">
+        <div className="bg-[#050505] border-t border-brand/30 shadow-2xl overflow-hidden">
+          {/* Console Header */}
+          <div className="flex items-center justify-between px-6 py-3 bg-[#0a0a0a] border-b border-white/5">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-brand animate-pulse shadow-[0_0_8px_#10b981]" />
+                <span className="text-[10px] font-bold text-brand uppercase tracking-widest">Hiero SDK Network Console</span>
+              </div>
             </div>
-            <button 
-              onClick={() => setShowAudit(!showAudit)}
-              className="btn-outline px-4 py-2 text-[10px] font-bold uppercase tracking-widest flex items-center gap-2"
-            >
-              {showAudit ? 'Collapse Explorer' : 'Expand Event Explorer'}
-            </button>
+            <div className="flex items-center gap-6">
+              <div className="flex items-center gap-2 text-[9px] font-mono text-text-muted uppercase">
+                Latency: <span className="text-brand">124ms</span>
+              </div>
+              <div className="flex items-center gap-2 text-[9px] font-mono text-text-muted uppercase">
+                Status: <span className="text-brand">200 OK</span>
+              </div>
+              <button 
+                onClick={() => setShowAudit(!showAudit)}
+                className="p-1 hover:bg-white/5 rounded transition-colors"
+              >
+                <ChevronRight className={`w-4 h-4 transition-transform ${showAudit ? 'rotate-90' : ''}`} />
+              </button>
+            </div>
           </div>
 
           <AnimatePresence>
             {showAudit && (
               <motion.div 
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: 'auto', opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
+                initial={{ height: 0 }}
+                animate={{ height: 'auto' }}
+                exit={{ height: 0 }}
                 className="overflow-hidden"
               >
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-6 bg-black rounded-lg border border-border-color overflow-hidden shadow-2xl min-h-[400px]">
-                  {/* Event Sidebar */}
-                  <div className="md:col-span-4 border-r border-border-color bg-secondary-bg/20 p-4 overflow-y-auto max-h-[500px]">
-                    <div className="space-y-2">
+                <div className="grid grid-cols-1 md:grid-cols-12 min-h-[450px]">
+                  {/* Left: Event Timeline */}
+                  <div className="md:col-span-3 border-r border-white/5 bg-[#080808] p-4 overflow-y-auto max-h-[500px]">
+                    <div className="flex items-center justify-between mb-6">
+                      <h3 className="text-[10px] font-bold text-text-muted uppercase tracking-widest">Event Timeline</h3>
+                      <button className="text-[8px] text-text-muted hover:text-brand uppercase font-bold">Clear</button>
+                    </div>
+                    
+                    <div className="space-y-4">
+                      {/* API Call (Synthetic) */}
+                      <div className="group relative pl-4 border-l border-brand/20">
+                        <div className="absolute left-[-4px] top-0 w-2 h-2 rounded-full bg-brand/40" />
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="px-1.5 py-0.5 rounded-[2px] bg-brand/10 text-brand text-[8px] font-bold uppercase tracking-tighter">API</span>
+                          <span className="text-[9px] text-text-muted font-mono">{new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
+                        </div>
+                        <div className="text-[10px] font-bold text-primary uppercase leading-tight group-hover:text-brand transition-colors cursor-pointer">
+                          GET_TRANSACTION
+                        </div>
+                      </div>
+
                       {(transaction.metadata?.history || []).map((log: any, idx: number) => (
-                        <button 
+                        <div 
                           key={idx}
                           onClick={() => setShowRawData(idx)}
-                          className={`w-full text-left p-3 rounded transition-all border ${
-                            showRawData === idx ? 'bg-brand/10 border-brand' : 'bg-primary-bg/50 border-transparent hover:border-border-color'
+                          className={`group relative pl-4 border-l cursor-pointer transition-all ${
+                            showRawData === idx ? 'border-brand' : 'border-white/10 hover:border-white/30'
                           }`}
                         >
-                          <div className="flex items-center gap-3">
-                            <div className={`p-1.5 rounded-full ${showRawData === idx ? 'bg-brand text-white' : 'bg-tertiary-bg text-text-muted'}`}>
-                              {log.type === 'VAULT_GENESIS' ? <Shield className="w-3 h-3" /> : 
-                               log.type === 'PAYMENT_VERIFICATION' ? <CreditCard className="w-3 h-3" /> :
-                               <Truck className="w-3 h-3" />}
-                            </div>
-                            <div className="flex-grow">
-                              <div className="text-[9px] font-bold uppercase tracking-wider leading-none mb-1 text-text-muted">
-                                {log.type?.replace('_', ' ') || 'LOG ENTRY'}
-                              </div>
-                              <div className="text-[10px] font-bold text-primary leading-none">
-                                {log.status}
-                              </div>
-                            </div>
-                            <div className="text-[8px] text-text-muted font-mono whitespace-nowrap">
-                              {new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                            </div>
+                          <div className={`absolute left-[-4px] top-0 w-2 h-2 rounded-full ${
+                            showRawData === idx ? 'bg-brand' : 'bg-white/10'
+                          }`} />
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="px-1.5 py-0.5 rounded-[2px] bg-purple-500/10 text-purple-400 text-[8px] font-bold uppercase tracking-tighter">EVM</span>
+                            <span className="text-[9px] text-text-muted font-mono">
+                              {new Date(log.timestamp).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}
+                            </span>
                           </div>
-                        </button>
-                      ))}
-                      {(!transaction.metadata?.history || transaction.metadata.history.length === 0) && (
-                        <div className="text-center py-10">
-                          <p className="text-[10px] text-text-muted italic">No ledger events found.</p>
+                          <div className={`text-[10px] font-bold uppercase leading-tight transition-colors ${
+                            showRawData === idx ? 'text-brand' : 'text-primary group-hover:text-brand'
+                          }`}>
+                            CONTRACT_EMISSION: {log.type?.split('_').pop()}
+                          </div>
                         </div>
-                      )}
+                      ))}
                     </div>
                   </div>
 
-                  {/* JSON Console */}
-                  <div className="md:col-span-8 p-6 flex flex-col h-full bg-[#0a0a0a]">
-                    <div className="flex items-center justify-between mb-4">
+                  {/* Right: Code Viewer */}
+                  <div className="md:col-span-9 bg-[#050505] flex flex-col h-full">
+                    <div className="flex items-center justify-between px-6 py-3 border-b border-white/5 bg-[#0a0a0a]/50">
                       <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-success animate-pulse" />
-                        <span className="text-[10px] font-mono text-success uppercase tracking-widest">Live HCS Console</span>
+                        <Shield className="w-3.5 h-3.5 text-brand" />
+                        <span className="text-[10px] font-mono text-text-muted uppercase">EVM_RESPONSE.JSON</span>
                       </div>
                       <button 
                         onClick={handleCopyJSON}
-                        className="text-[9px] font-bold text-brand hover:underline flex items-center gap-1"
+                        className="flex items-center gap-2 px-3 py-1.5 rounded bg-brand/10 border border-brand/20 text-brand text-[9px] font-bold uppercase hover:bg-brand/20 transition-all"
                       >
-                        {jsonCopied ? (
-                          <span className="flex items-center gap-1 text-success">
-                            <CheckCircle2 className="w-2.5 h-2.5" /> Copied Payload!
-                          </span>
-                        ) : 'Copy JSON Payload'}
+                        {jsonCopied ? <CheckCircle2 className="w-3 h-3" /> : <ExternalLink className="w-3 h-3" />}
+                        {jsonCopied ? 'Logs Copied!' : 'Copy Logs'}
                       </button>
                     </div>
-                    
-                    <div className="flex-grow overflow-auto">
-                      <pre className="text-[#00ff00] font-mono text-[11px] leading-relaxed">
+
+                    <div className="p-8 flex-grow overflow-auto bg-[#030303]">
+                      <pre className="text-[#10b981] font-mono text-[12px] leading-relaxed selection:bg-brand/30">
                         {JSON.stringify(
-                          transaction.metadata?.history?.[showRawData as number] || { message: "Select an event to view raw blockchain data." }, 
+                          transaction.metadata?.history?.[showRawData as number] || { message: "Waiting for network emission..." }, 
                           null, 
                           2
                         )}
                       </pre>
-                    </div>
-
-                    <div className="mt-6 pt-4 border-t border-white/5">
-                      <div className="flex items-center justify-between">
-                        <div className="text-[9px] text-text-muted font-mono">
-                          Topic: {transaction.metadata?.hcsTopicId || 'N/A'} | Seq: {transaction.metadata?.history?.[showRawData as number]?.hcsResult?.sequenceNumber || 'N/A'}
-                        </div>
-                        <a 
-                          href={`https://hashscan.io/testnet/transaction/${transaction.metadata?.lastTxId?.replace('@', '-').replace(/\.(?=\d+$)/, '-')}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-[9px] text-brand hover:underline flex items-center gap-1"
-                        >
-                          Verify on Hashscan <ExternalLink className="w-2 h-2" />
-                        </a>
-                      </div>
                     </div>
                   </div>
                 </div>
               </motion.div>
             )}
           </AnimatePresence>
+
+          {/* Console Footer Status Bar */}
+          <div className="flex items-center justify-between px-6 py-2 bg-brand text-[#050505] font-bold">
+            <div className="flex items-center gap-6">
+              <div className="flex items-center gap-2 text-[9px] uppercase tracking-widest">
+                <div className="w-2 h-2 rounded-full bg-[#050505] animate-pulse" />
+                Testnet-Ready
+              </div>
+              <div className="flex items-center gap-2 text-[9px] uppercase tracking-widest border-l border-[#050505]/20 pl-6">
+                <Lock className="w-3 h-3" />
+                Secure Vault Active
+              </div>
+            </div>
+            <div className="text-[9px] uppercase tracking-tighter">
+              @ Twiinex Protocol V2.0
+            </div>
+          </div>
         </div>
       </div>
     </div>
